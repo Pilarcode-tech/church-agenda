@@ -70,7 +70,7 @@ export default function PastorCalendar({ userRole, userName }: PastorCalendarPro
       toast('Erro ao carregar compromissos.', 'error')
     }
     setLoading(false)
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     fetchEvents(currentDate, view)
@@ -264,9 +264,9 @@ export default function PastorCalendar({ userRole, userName }: PastorCalendarPro
           className={`absolute top-0 left-0 right-0 h-0.5 z-30 rounded-full bg-brand-accent transition-opacity duration-200 ${loading ? 'opacity-100 animate-pulse' : 'opacity-0'}`}
         />
 
-        {/* Opacity fade during loading, views always mounted */}
+        {/* Opacity fade during loading, render only active view */}
         <div style={{ opacity: loading ? 0.6 : 1 }} className="transition-opacity duration-200">
-          <div style={{ display: view === 'month' ? undefined : 'none' }}>
+          {view === 'month' && (
             <MonthView
               currentDate={currentDate}
               events={events}
@@ -274,27 +274,27 @@ export default function PastorCalendar({ userRole, userName }: PastorCalendarPro
               onSlotClick={handleSlotClick}
               canEdit={canEdit}
             />
-          </div>
-          <div style={{ display: view === 'week' ? undefined : 'none' }}>
+          )}
+          {view === 'week' && (
             <WeekView
               currentDate={currentDate}
               events={events}
               onEventClick={handleEventClick}
               onSlotClick={handleSlotClick}
               canEdit={canEdit}
-              active={view === 'week'}
+              active
             />
-          </div>
-          <div style={{ display: view === 'day' ? undefined : 'none' }}>
+          )}
+          {view === 'day' && (
             <DayView
               currentDate={currentDate}
               events={events}
               onEventClick={handleEventClick}
               onSlotClick={handleSlotClick}
               canEdit={canEdit}
-              active={view === 'day'}
+              active
             />
-          </div>
+          )}
         </div>
       </div>
 
