@@ -32,7 +32,7 @@ export default async function FrontendLayout({
   const userData = {
     name: user.name as string,
     role: user.role as string,
-    email: user.email,
+    email: user.email || '',
   }
 
   return (
