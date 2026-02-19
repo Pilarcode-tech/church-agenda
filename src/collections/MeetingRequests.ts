@@ -17,6 +17,18 @@ const MeetingRequests: CollectionConfig = {
       required: true,
     },
     {
+      name: 'meetingWith',
+      type: 'select',
+      label: 'Reunião com',
+      required: true,
+      defaultValue: 'pastor',
+      options: [
+        { label: 'Pastor', value: 'pastor' },
+        { label: 'Secretaria', value: 'secretaria' },
+        { label: 'Liderança geral', value: 'lideranca' },
+      ],
+    },
+    {
       name: 'reason',
       type: 'text',
       label: 'Motivo da reunião',

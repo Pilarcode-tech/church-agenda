@@ -30,7 +30,7 @@ type Props = {
   requests: Request[]
   pendingCount: number
   userRole: string
-  userId: string
+  userId: number
 }
 
 type FilterTab = 'pendente' | 'aprovado' | 'recusado' | 'all'
@@ -50,6 +50,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
   const [newReason, setNewReason] = useState('')
   const [newDate, setNewDate] = useState('')
   const [newDuration, setNewDuration] = useState(30)
+  const [newMeetingWith, setNewMeetingWith] = useState('pastor')
   const [creatingSaving, setCreatingSaving] = useState(false)
 
   const canEvaluate = userRole === 'pastor' || userRole === 'secretaria'
@@ -115,6 +116,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
         credentials: 'include',
         body: JSON.stringify({
           requestedBy: userId,
+          meetingWith: newMeetingWith,
           reason: newReason,
           suggestedDate: new Date(newDate).toISOString(),
           estimatedDuration: newDuration,
@@ -127,6 +129,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
         setNewReason('')
         setNewDate('')
         setNewDuration(30)
+        setNewMeetingWith('pastor')
         router.refresh()
       } else {
         toast('Erro ao enviar solicitação.', 'error')
@@ -366,6 +369,19 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
         }
       >
         <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-brand-text mb-1">Reunião com *</label>
+            <select
+              value={newMeetingWith}
+              onChange={(e) => setNewMeetingWith(e.target.value)}
+              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+            >
+              <option value="pastor">Pastor</option>
+              <option value="secretaria">Secretaria</option>
+              <option value="lideranca">Liderança geral</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-xs font-medium text-brand-text mb-1">Motivo da reunião *</label>
             <input

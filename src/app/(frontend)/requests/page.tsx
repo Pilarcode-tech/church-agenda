@@ -35,7 +35,7 @@ export default async function RequestsPage() {
           requests={JSON.parse(JSON.stringify(allRequests.docs))}
           pendingCount={pendingCount.totalDocs}
           userRole={role}
-          userId={String(user?.id ?? '')}
+          userId={user?.id as number}
         />
       </div>
     </>
