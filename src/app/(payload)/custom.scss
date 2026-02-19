@@ -1,1 +1,90 @@
-// Add custom Payload admin styles here
+// Estilos customizados do Payload Admin — Igreja Verbo da Vida
+
+// === Campos de formulário ===
+// Adicionar bordas visíveis nos inputs, selects e textareas
+.field-type {
+  input,
+  textarea,
+  .rs__control {
+    border: 1px solid var(--theme-elevation-300) !important;
+    border-radius: 6px !important;
+    background: var(--theme-elevation-50) !important;
+    transition: border-color 0.2s ease;
+
+    &:focus,
+    &:focus-within {
+      border-color: var(--theme-elevation-500) !important;
+      outline: none;
+    }
+  }
+
+  // Select dropdown
+  .value-container {
+    padding: 2px 8px;
+  }
+}
+
+// Bloco de autenticação (Email, Password)
+.auth-fields {
+  border: 1px solid var(--theme-elevation-200) !important;
+  border-radius: 8px !important;
+  padding: 24px !important;
+}
+
+// === Labels ===
+.field-label,
+label {
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+  margin-bottom: 6px !important;
+}
+
+// === Botão Save ===
+.form-submit .btn {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  padding: 10px 24px !important;
+}
+
+// === Sidebar nav ===
+.nav-group__label {
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  opacity: 0.6;
+}
+
+// === Header/Breadcrumbs ===
+.step-nav {
+  a {
+    font-weight: 500;
+  }
+}
+
+// === Checkbox mais visível ===
+.checkbox-input {
+  .check {
+    border: 1px solid var(--theme-elevation-300) !important;
+    border-radius: 4px !important;
+  }
+}
+
+// === Espaçamento entre campos ===
+.render-fields {
+  .field-type + .field-type {
+    margin-top: 8px;
+  }
+}
+
+// === Tabela de listagem ===
+.collection-list {
+  .table {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .row-1:hover {
+    background: var(--theme-elevation-100);
+  }
+}
