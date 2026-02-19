@@ -1,0 +1,48 @@
+{
+  "name": "church-agenda",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "generate:types": "payload generate:types",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/react": "^6.1.17",
+    "@fullcalendar/timegrid": "^6.1.17",
+    "@payloadcms/db-postgres": "^3.0.0",
+    "@payloadcms/next": "^3.0.0",
+    "@payloadcms/richtext-lexical": "^3.0.0",
+    "@radix-ui/react-dialog": "^1.1.4",
+    "@radix-ui/react-popover": "^1.1.4",
+    "@radix-ui/react-select": "^2.1.4",
+    "date-fns": "^4.1.0",
+    "fullcalendar": "^6.1.17",
+    "graphql": "^16.10.0",
+    "lucide-react": "^0.575.0",
+    "next": "^15.0.0",
+    "payload": "^3.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sass": "^1.97.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
