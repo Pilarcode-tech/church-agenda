@@ -7,7 +7,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { format } from 'date-fns'
-import { Mail } from 'lucide-react'
+import { Mail, Plus } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 
 type Request = {
@@ -30,11 +30,12 @@ type Props = {
   requests: Request[]
   pendingCount: number
   userRole: string
+  userId: string
 }
 
 type FilterTab = 'pendente' | 'aprovado' | 'recusado' | 'all'
 
-export function RequestsList({ requests, pendingCount, userRole }: Props) {
+export function RequestsList({ requests, pendingCount, userRole, userId }: Props) {
   const router = useRouter()
   const { toast } = useToast()
   const [filter, setFilter] = useState<FilterTab>('pendente')
@@ -43,6 +44,13 @@ export function RequestsList({ requests, pendingCount, userRole }: Props) {
   const [confirmedDateTime, setConfirmedDateTime] = useState('')
   const [responseNote, setResponseNote] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // Estado do modal de nova solicitação
+  const [newModalOpen, setNewModalOpen] = useState(false)
+  const [newReason, setNewReason] = useState('')
+  const [newDate, setNewDate] = useState('')
+  const [newDuration, setNewDuration] = useState(30)
+  const [creatingSaving, setCreatingSaving] = useState(false)
 
   const canEvaluate = userRole === 'pastor' || userRole === 'secretaria'
 
@@ -97,30 +105,73 @@ export function RequestsList({ requests, pendingCount, userRole }: Props) {
     }
   }
 
+  async function handleCreateRequest() {
+    if (!newReason.trim() || !newDate) return
+    setCreatingSaving(true)
+    try {
+      const res = await fetch('/api/meeting-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          requestedBy: userId,
+          reason: newReason,
+          suggestedDate: new Date(newDate).toISOString(),
+          estimatedDuration: newDuration,
+          status: 'pendente',
+        }),
+      })
+      if (res.ok) {
+        toast('Solicitação enviada com sucesso!', 'success')
+        setNewModalOpen(false)
+        setNewReason('')
+        setNewDate('')
+        setNewDuration(30)
+        router.refresh()
+      } else {
+        toast('Erro ao enviar solicitação.', 'error')
+      }
+    } catch {
+      toast('Erro ao enviar solicitação.', 'error')
+    } finally {
+      setCreatingSaving(false)
+    }
+  }
+
   return (
     <>
-      {/* Tabs */}
-      <div className="flex items-center gap-1 mb-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
-              filter === tab.key
-                ? 'bg-brand-text text-white font-medium'
-                : 'text-brand-muted hover:bg-brand-bg'
-            }`}
-          >
-            {tab.label}
-            {tab.count !== undefined && tab.count > 0 && (
-              <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                filter === tab.key ? 'bg-white/20 text-white' : 'bg-brand-amberL text-brand-amber'
-              }`}>
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Header com botão de nova solicitação */}
+      <div className="flex items-center justify-between mb-4">
+        {/* Tabs */}
+        <div className="flex items-center gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                filter === tab.key
+                  ? 'bg-brand-text text-white font-medium'
+                  : 'text-brand-muted hover:bg-brand-bg'
+              }`}
+            >
+              {tab.label}
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                  filter === tab.key ? 'bg-white/20 text-white' : 'bg-brand-amberL text-brand-amber'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setNewModalOpen(true)}
+          className="px-3 py-1.5 rounded-lg bg-brand-text text-white hover:bg-stone-800 text-xs font-medium transition-colors flex items-center gap-1.5"
+        >
+          <Plus size={14} /> Nova solicitação
+        </button>
       </div>
 
       {/* Table */}
@@ -289,6 +340,73 @@ export function RequestsList({ requests, pendingCount, userRole }: Props) {
             )}
           </div>
         )}
+      </Modal>
+
+      {/* Modal de nova solicitação */}
+      <Modal
+        open={newModalOpen}
+        onClose={() => setNewModalOpen(false)}
+        title="Nova solicitação de reunião"
+        footer={
+          <>
+            <button
+              onClick={() => setNewModalOpen(false)}
+              className="bg-white text-brand-muted border border-brand-border rounded-lg px-4 py-2 text-sm hover:bg-brand-bg"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleCreateRequest}
+              disabled={creatingSaving || !newReason.trim() || !newDate}
+              className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
+            >
+              {creatingSaving ? 'Enviando...' : 'Enviar solicitação'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-brand-text mb-1">Motivo da reunião *</label>
+            <input
+              value={newReason}
+              onChange={(e) => setNewReason(e.target.value)}
+              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm focus:border-brand-muted outline-none"
+              placeholder="Ex: Alinhar projeto do ministério de jovens"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-brand-text mb-1">Data e horário sugerido *</label>
+              <input
+                type="datetime-local"
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-brand-text mb-1">Duração estimada</label>
+              <select
+                value={newDuration}
+                onChange={(e) => setNewDuration(Number(e.target.value))}
+                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              >
+                <option value={15}>15 minutos</option>
+                <option value={30}>30 minutos</option>
+                <option value={45}>45 minutos</option>
+                <option value={60}>1 hora</option>
+                <option value={90}>1h30</option>
+                <option value={120}>2 horas</option>
+              </select>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-brand-dim">
+            Sua solicitação será enviada para o pastor e a secretaria avaliarem.
+          </p>
+        </div>
       </Modal>
     </>
   )
