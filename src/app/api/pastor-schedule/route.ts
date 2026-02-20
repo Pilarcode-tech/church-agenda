@@ -34,15 +34,13 @@ export async function GET(req: NextRequest) {
   const where: any = {}
   if (start && end) {
     where.and = [
-      { startDateTime: { greater_than_equal: start } },
-      { startDateTime: { less_than_equal: end } },
+      { startDateTime: { less_than: end } },
+      { endDateTime: { greater_than: start } },
     ]
   }
 
-  // Líderes só veem eventos públicos
-  if (!isPrivileged) {
-    where.and = [...(where.and || []), { isPublic: { equals: true } }]
-  }
+  // Líderes veem todos os eventos, mas os privados aparecem como "Ocupado"
+  // (a visibilidade é controlada na formatação abaixo, não na query)
 
   const events = await payload.find({
     collection: 'pastor-schedule',
@@ -52,17 +50,20 @@ export async function GET(req: NextRequest) {
     depth: 1,
   })
 
-  const formatted = events.docs.map((event) => ({
-    id: event.id,
-    title: event.isPublic || isPrivileged ? event.title : 'Ocupado',
-    type: event.type,
-    start: event.startDateTime,
-    end: event.endDateTime,
-    isPublic: event.isPublic,
-    notes: isPrivileged ? event.notes : undefined,
-    color: getColorByType(event.type as string),
-    textColor: '#ffffff',
-  }))
+  const formatted = events.docs.map((event) => {
+    const canSeeDetails = event.isPublic || isPrivileged
+    return {
+      id: event.id,
+      title: canSeeDetails ? event.title : 'Ocupado',
+      type: canSeeDetails ? event.type : 'bloqueio',
+      start: event.startDateTime,
+      end: event.endDateTime,
+      isPublic: event.isPublic,
+      notes: isPrivileged ? event.notes : undefined,
+      color: canSeeDetails ? getColorByType(event.type as string) : '#9CA3AF',
+      textColor: '#ffffff',
+    }
+  })
 
   return NextResponse.json(formatted)
 }

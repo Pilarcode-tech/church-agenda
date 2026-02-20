@@ -9,27 +9,27 @@ export async function GET(req: NextRequest) {
   const start = searchParams.get('start')
   const end = searchParams.get('end')
 
-  // Buscar reservas aprovadas
+  // Buscar reservas aprovadas (overlap: startDateTime < end AND endDateTime > start)
   const reservations = await payload.find({
     collection: 'reservations',
     where: {
       and: [
         { status: { equals: 'aprovado' } },
-        { startDateTime: { greater_than_equal: start } },
-        { endDateTime: { less_than_equal: end } },
+        { startDateTime: { less_than: end } },
+        { endDateTime: { greater_than: start } },
       ],
     },
     depth: 2,
   })
 
-  // Buscar agenda do pastor (eventos públicos)
+  // Buscar agenda do pastor (eventos públicos, overlap detection)
   const pastorEvents = await payload.find({
     collection: 'pastor-schedule',
     where: {
       and: [
         { isPublic: { equals: true } },
-        { startDateTime: { greater_than_equal: start } },
-        { endDateTime: { less_than_equal: end } },
+        { startDateTime: { less_than: end } },
+        { endDateTime: { greater_than: start } },
       ],
     },
   })

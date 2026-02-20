@@ -79,14 +79,9 @@ const PastorSchedule: CollectionConfig = {
     ],
   },
   access: {
-    // Líderes só veem eventos públicos, pastor e secretaria veem tudo
-    read: ({ req }) => {
-      if (!req.user) return false
-      const role = req.user.role
-      if (role === 'pastor' || role === 'secretaria') return true
-      // Líderes: retorna query que filtra apenas isPublic: true
-      return { isPublic: { equals: true } }
-    },
+    // Todos os usuários autenticados podem ler — a API controla a visibilidade
+    // (líderes veem eventos privados como "Ocupado", sem título/detalhes)
+    read: ({ req }) => !!req.user,
     create: ({ req }) => {
       const role = req.user?.role
       return role === 'pastor' || role === 'secretaria'
