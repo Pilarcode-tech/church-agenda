@@ -17,11 +17,29 @@ type Reservation = {
   startDateTime: string
   endDateTime: string
   attendeesCount?: number
+  resourcesNeeded?: string[]
+  resourceNotes?: string
   status: string
   responseNote?: string
   space: { id: string; name: string; requiresApproval?: boolean }
   requestedBy: { id: string; name: string; ministerio?: string }
 }
+
+const resourceOptions = [
+  { value: 'projecao', label: 'Telão / Projeção' },
+  { value: 'som', label: 'Som' },
+  { value: 'microfone', label: 'Microfone' },
+  { value: 'foto_video', label: 'Cobertura Foto/Vídeo' },
+  { value: 'cozinha', label: 'Cozinha' },
+  { value: 'comes_bebes', label: 'Comes e Bebes' },
+  { value: 'ar_condicionado', label: 'Ar-condicionado' },
+  { value: 'cadeiras_extras', label: 'Cadeiras extras' },
+  { value: 'mesas', label: 'Mesas' },
+]
+
+const resourceLabels: Record<string, string> = Object.fromEntries(
+  resourceOptions.map((o) => [o.value, o.label]),
+)
 
 type Space = {
   id: string
@@ -56,6 +74,8 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
     attendeesCount: '',
   })
   const [newAllDay, setNewAllDay] = useState(false)
+  const [newResources, setNewResources] = useState<string[]>([])
+  const [newResourceNotes, setNewResourceNotes] = useState('')
   const [conflictMsg, setConflictMsg] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -118,6 +138,8 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
           startDateTime,
           endDateTime,
           attendeesCount: newForm.attendeesCount ? Number(newForm.attendeesCount) : undefined,
+          resourcesNeeded: newResources.length > 0 ? newResources : undefined,
+          resourceNotes: newResourceNotes || undefined,
           requestedBy: userId,
         }),
       })
@@ -126,6 +148,8 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
         setShowNew(false)
         setNewForm({ title: '', space: '', eventType: 'reuniao', startDateTime: '', endDateTime: '', attendeesCount: '' })
         setNewAllDay(false)
+        setNewResources([])
+        setNewResourceNotes('')
         setConflictMsg('')
         router.refresh()
       } else {
@@ -403,6 +427,40 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
               placeholder="Opcional"
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-brand-text mb-2">O que vai precisar?</label>
+            <div className="grid grid-cols-2 gap-2">
+              {resourceOptions.map((opt) => (
+                <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newResources.includes(opt.value)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setNewResources([...newResources, opt.value])
+                      } else {
+                        setNewResources(newResources.filter((r) => r !== opt.value))
+                      }
+                    }}
+                    className="w-4 h-4 rounded border-brand-border accent-brand-text"
+                  />
+                  <span className="text-sm text-brand-text">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-brand-text mb-1">Observações sobre recursos</label>
+            <textarea
+              value={newResourceNotes}
+              onChange={(e) => setNewResourceNotes(e.target.value)}
+              rows={2}
+              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none resize-none"
+              placeholder="Algum detalhe adicional? (opcional)"
+            />
+          </div>
         </div>
       </Modal>
 
@@ -448,6 +506,27 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
                   <p className="text-sm text-brand-text">{selected.requestedBy?.name}</p>
                 </div>
               </div>
+              {selected.resourcesNeeded && selected.resourcesNeeded.length > 0 && (
+                <div className="pt-2">
+                  <p className="text-[11px] text-brand-dim mb-1.5">Recursos solicitados</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selected.resourcesNeeded.map((r) => (
+                      <span
+                        key={r}
+                        className="inline-block bg-brand-accentL text-brand-accent text-[11px] font-medium px-2 py-0.5 rounded-full"
+                      >
+                        {resourceLabels[r] ?? r}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selected.resourceNotes && (
+                <div className="pt-1">
+                  <p className="text-[11px] text-brand-dim">Observações sobre recursos</p>
+                  <p className="text-sm text-brand-text whitespace-pre-line">{selected.resourceNotes}</p>
+                </div>
+              )}
             </div>
 
             {selected.status === 'pendente' && canApprove ? (

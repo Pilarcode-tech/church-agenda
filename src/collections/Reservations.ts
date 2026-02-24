@@ -64,11 +64,28 @@ const Reservations: CollectionConfig = {
     },
     {
       name: 'resourcesNeeded',
-      type: 'array',
+      type: 'select',
+      hasMany: true,
       label: 'Recursos necessários',
-      fields: [
-        { name: 'resource', type: 'text', label: 'Recurso' },
+      options: [
+        { label: 'Telão / Projeção', value: 'projecao' },
+        { label: 'Som', value: 'som' },
+        { label: 'Microfone', value: 'microfone' },
+        { label: 'Cobertura Foto/Vídeo', value: 'foto_video' },
+        { label: 'Cozinha', value: 'cozinha' },
+        { label: 'Comes e Bebes', value: 'comes_bebes' },
+        { label: 'Ar-condicionado', value: 'ar_condicionado' },
+        { label: 'Cadeiras extras', value: 'cadeiras_extras' },
+        { label: 'Mesas', value: 'mesas' },
       ],
+    },
+    {
+      name: 'resourceNotes',
+      type: 'textarea',
+      label: 'Observações sobre recursos',
+      admin: {
+        description: 'Detalhes adicionais sobre os recursos necessários.',
+      },
     },
     {
       name: 'status',
