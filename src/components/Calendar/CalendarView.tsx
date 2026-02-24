@@ -29,9 +29,8 @@ export function CalendarView({
   const [selectedSpace, setSelectedSpace] = useState('all')
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
 
-  const updateTitle = useCallback(() => {
-    const api = calendarRef.current?.getApi()
-    if (api) setTitle(api.view.title)
+  const handleDatesSet = useCallback((arg: { view: { title: string } }) => {
+    setTitle(arg.view.title)
   }, [])
 
   function goTo(direction: 'prev' | 'next' | 'today') {
@@ -40,7 +39,6 @@ export function CalendarView({
     if (direction === 'prev') api.prev()
     else if (direction === 'next') api.next()
     else api.today()
-    updateTitle()
   }
 
   function changeView(view: string) {
@@ -48,7 +46,6 @@ export function CalendarView({
     if (!api) return
     api.changeView(view)
     setCurrentView(view)
-    updateTitle()
   }
 
   function handleEventClick(info: EventClickArg) {
@@ -132,8 +129,8 @@ export function CalendarView({
         eventClassNames="rounded text-xs font-medium cursor-pointer"
         dayMaxEvents={3}
         height="auto"
-        datesSet={updateTitle}
-        allDaySlot={false}
+        datesSet={handleDatesSet}
+        allDaySlot={true}
         slotMinTime="06:00:00"
         slotMaxTime="23:00:00"
       />

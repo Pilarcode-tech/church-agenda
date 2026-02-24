@@ -30,6 +30,7 @@ export function BlockForm({ blocks }: Props) {
     visibility: 'false',
     notes: '',
   })
+  const [allDay, setAllDay] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
@@ -37,6 +38,16 @@ export function BlockForm({ blocks }: Props) {
     e.preventDefault()
     setSaving(true)
     try {
+      let startDateTime = form.startDateTime
+      let endDateTime = form.endDateTime
+      if (allDay) {
+        // Usar T00:00 para forçar parse como horário local (não UTC)
+        const s = new Date(`${form.startDateTime}T00:00`)
+        startDateTime = s.toISOString()
+        const endDateStr = form.endDateTime || form.startDateTime
+        const e = new Date(`${endDateStr}T23:59:59`)
+        endDateTime = e.toISOString()
+      }
       const res = await fetch('/api/pastor-schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,8 +55,8 @@ export function BlockForm({ blocks }: Props) {
         body: JSON.stringify({
           title: `Bloqueio — ${form.reason}`,
           type: 'bloqueio',
-          startDateTime: form.startDateTime,
-          endDateTime: form.endDateTime,
+          startDateTime,
+          endDateTime,
           isPublic: form.visibility === 'true',
           notes: form.notes,
         }),
@@ -53,6 +64,7 @@ export function BlockForm({ blocks }: Props) {
       if (res.ok) {
         toast('Bloqueio criado com sucesso.', 'success')
         setForm({ reason: 'viagem', startDateTime: '', endDateTime: '', visibility: 'false', notes: '' })
+        setAllDay(false)
         router.refresh()
       } else {
         toast('Erro ao criar bloqueio.', 'error')
@@ -104,28 +116,66 @@ export function BlockForm({ blocks }: Props) {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-brand-text mb-1">Data/hora início</label>
-              <input
-                type="datetime-local"
-                value={form.startDateTime}
-                onChange={(e) => setForm({ ...form, startDateTime: e.target.value })}
-                required
-                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-              />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allDay}
+              onChange={(e) => {
+                setAllDay(e.target.checked)
+                setForm({ ...form, startDateTime: '', endDateTime: '' })
+              }}
+              className="w-4 h-4 rounded border-brand-border accent-brand-text"
+            />
+            <span className="text-sm text-brand-text">Dia inteiro</span>
+          </label>
+
+          {allDay ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data início</label>
+                <input
+                  type="date"
+                  value={form.startDateTime}
+                  onChange={(e) => setForm({ ...form, startDateTime: e.target.value, endDateTime: e.target.value })}
+                  required
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data fim</label>
+                <input
+                  type="date"
+                  value={form.endDateTime}
+                  onChange={(e) => setForm({ ...form, endDateTime: e.target.value })}
+                  required
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-brand-text mb-1">Data/hora fim</label>
-              <input
-                type="datetime-local"
-                value={form.endDateTime}
-                onChange={(e) => setForm({ ...form, endDateTime: e.target.value })}
-                required
-                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-              />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data/hora início</label>
+                <input
+                  type="datetime-local"
+                  value={form.startDateTime}
+                  onChange={(e) => setForm({ ...form, startDateTime: e.target.value })}
+                  required
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data/hora fim</label>
+                <input
+                  type="datetime-local"
+                  value={form.endDateTime}
+                  onChange={(e) => setForm({ ...form, endDateTime: e.target.value })}
+                  required
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-brand-text mb-1">O que os líderes veem</label>

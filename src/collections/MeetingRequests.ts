@@ -17,28 +17,36 @@ const MeetingRequests: CollectionConfig = {
       required: true,
     },
     {
-      name: 'meetingWith',
+      name: 'modality',
       type: 'select',
-      label: 'Reunião com',
+      label: 'Modalidade',
       required: true,
-      defaultValue: 'pastor',
+      defaultValue: 'presencial',
       options: [
-        { label: 'Pastor', value: 'pastor' },
-        { label: 'Secretaria', value: 'secretaria' },
-        { label: 'Liderança geral', value: 'lideranca' },
+        { label: 'Presencial', value: 'presencial' },
+        { label: 'Online', value: 'online' },
       ],
     },
     {
       name: 'reason',
-      type: 'text',
-      label: 'Motivo da reunião',
+      type: 'textarea',
+      label: 'Assunto / Motivo da reunião',
       required: true,
+    },
+    {
+      name: 'isAllDay',
+      type: 'checkbox',
+      label: 'Dia inteiro',
+      defaultValue: false,
     },
     {
       name: 'estimatedDuration',
       type: 'number',
       label: 'Duração estimada (minutos)',
       defaultValue: 30,
+      admin: {
+        condition: (data) => !data.isAllDay,
+      },
     },
     {
       name: 'suggestedDate',
@@ -77,19 +85,28 @@ const MeetingRequests: CollectionConfig = {
         description: 'Mensagem enviada ao líder ao aprovar, recusar ou reagendar.',
       },
     },
+    {
+      name: 'seenBy',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: 'Visto por',
+      admin: { readOnly: true, position: 'sidebar' },
+    },
   ],
   hooks: {
     // Ao aprovar, criar automaticamente na agenda do pastor
     afterChange: [
       async ({ req, doc, operation }) => {
         if (operation === 'update' && doc.status === 'aprovado' && doc.confirmedDateTime) {
+          const endDateTime = new Date(new Date(doc.confirmedDateTime).getTime() + (doc.estimatedDuration || 30) * 60000).toISOString()
           await req.payload.create({
             collection: 'pastor-schedule',
             data: {
               title: `Reunião — ${doc.reason}`,
               type: 'reuniao',
               startDateTime: doc.confirmedDateTime,
-              endDateTime: new Date(new Date(doc.confirmedDateTime).getTime() + doc.estimatedDuration * 60000).toISOString(),
+              endDateTime,
               isPublic: false,
               notes: `Solicitado por: ${doc.requestedBy}`,
               createdBy: req.user?.id,
@@ -100,7 +117,12 @@ const MeetingRequests: CollectionConfig = {
     ],
   },
   access: {
-    read: ({ req }) => !!req.user,
+    read: ({ req }) => {
+      if (!req.user) return false
+      const role = req.user.role
+      if (role === 'pastor' || role === 'secretaria') return true
+      return { requestedBy: { equals: req.user.id } }
+    },
     create: ({ req }) => !!req.user,
     update: ({ req }) => {
       const role = req.user?.role

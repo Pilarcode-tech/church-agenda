@@ -76,7 +76,7 @@ export function UserMenu({ user }: UserMenuProps) {
           {/* Menu items */}
           <div className="py-1">
             <a
-              href="/admin/account"
+              href="/profile"
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-text hover:bg-brand-bg transition-colors"
             >
               <User size={16} className="text-brand-muted" />

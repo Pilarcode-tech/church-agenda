@@ -115,7 +115,12 @@ const Reservations: CollectionConfig = {
     ],
   },
   access: {
-    read: ({ req }) => !!req.user,
+    read: ({ req }) => {
+      if (!req.user) return false
+      const role = req.user.role
+      if (role === 'pastor' || role === 'secretaria') return true
+      return { requestedBy: { equals: req.user.id } }
+    },
     create: ({ req }) => !!req.user,
     update: ({ req }) => {
       const role = req.user?.role

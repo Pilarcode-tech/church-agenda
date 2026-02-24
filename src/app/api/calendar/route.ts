@@ -8,30 +8,38 @@ export async function GET(req: NextRequest) {
 
   const start = searchParams.get('start')
   const end = searchParams.get('end')
+  const spaceFilter = searchParams.get('space')
 
   // Buscar reservas aprovadas (overlap: startDateTime < end AND endDateTime > start)
+  const reservationWhere: any = {
+    and: [
+      { status: { equals: 'aprovado' } },
+      ...(start ? [{ startDateTime: { less_than: end } }] : []),
+      ...(end ? [{ endDateTime: { greater_than: start } }] : []),
+      ...(spaceFilter ? [{ space: { equals: spaceFilter } }] : []),
+    ],
+  }
+
   const reservations = await payload.find({
     collection: 'reservations',
-    where: {
-      and: [
-        { status: { equals: 'aprovado' } },
-        { startDateTime: { less_than: end } },
-        { endDateTime: { greater_than: start } },
-      ],
-    },
+    where: reservationWhere,
     depth: 2,
+    limit: 200,
   })
 
   // Buscar agenda do pastor (eventos públicos, overlap detection)
+  const pastorWhere: any = {
+    and: [
+      { isPublic: { equals: true } },
+      ...(start ? [{ startDateTime: { less_than: end } }] : []),
+      ...(end ? [{ endDateTime: { greater_than: start } }] : []),
+    ],
+  }
+
   const pastorEvents = await payload.find({
     collection: 'pastor-schedule',
-    where: {
-      and: [
-        { isPublic: { equals: true } },
-        { startDateTime: { less_than: end } },
-        { endDateTime: { greater_than: start } },
-      ],
-    },
+    where: pastorWhere,
+    limit: 200,
   })
 
   // Formatar para FullCalendar

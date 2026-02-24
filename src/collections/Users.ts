@@ -51,7 +51,10 @@ const Users: CollectionConfig = {
     },
     update: ({ req }) => {
       const role = req.user?.role
-      return role === 'pastor' || role === 'secretaria'
+      if (role === 'pastor' || role === 'secretaria') return true
+      // Permite que o próprio usuário edite seu perfil
+      if (req.user?.id) return { id: { equals: req.user.id } }
+      return false
     },
     delete: ({ req }) => req.user?.role === 'secretaria',
   },

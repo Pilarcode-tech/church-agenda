@@ -44,6 +44,7 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
   const [type, setType] = useState('reuniao')
   const [startDt, setStartDt] = useState('')
   const [endDt, setEndDt] = useState('')
+  const [allDay, setAllDay] = useState(false)
   const [isPublic, setIsPublic] = useState(false)
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -57,6 +58,7 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
       setType(event.type ?? 'reuniao')
       setStartDt(event.start ? toLocalDatetime(event.start) : '')
       setEndDt(event.end ? toLocalDatetime(event.end) : '')
+      setAllDay(event.allDay ?? false)
       setIsPublic(event.isPublic ?? false)
       setNotes(event.notes ?? '')
     } else if (initialSlot) {
@@ -64,6 +66,7 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
       setType('reuniao')
       setStartDt(toLocalDatetime(initialSlot.start))
       setEndDt(toLocalDatetime(initialSlot.end))
+      setAllDay(initialSlot.start.getHours() === 0 && initialSlot.end.getHours() === 0)
       setIsPublic(false)
       setNotes('')
     } else {
@@ -71,6 +74,7 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
       setType('reuniao')
       setStartDt('')
       setEndDt('')
+      setAllDay(false)
       setIsPublic(false)
       setNotes('')
     }
@@ -78,16 +82,27 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
   }, [event, initialSlot, open])
 
   const endValid = !startDt || !endDt || new Date(endDt) > new Date(startDt)
-  const canSave = title.trim() && startDt && endDt && endValid
+  const canSave = title.trim() && startDt && (allDay || (endDt && endValid))
 
   async function handleSave() {
     setSaving(true)
     try {
+      let startDateTime: string
+      let endDateTime: string
+      if (allDay) {
+        // Usar T00:00 para forçar parse como horário local (não UTC)
+        startDateTime = new Date(`${startDt}T00:00:00`).toISOString()
+        const endDateStr = endDt || startDt
+        endDateTime = new Date(`${endDateStr}T23:59:59`).toISOString()
+      } else {
+        startDateTime = new Date(startDt).toISOString()
+        endDateTime = new Date(endDt).toISOString()
+      }
       await onSave({
         title,
         type,
-        startDateTime: new Date(startDt).toISOString(),
-        endDateTime: new Date(endDt).toISOString(),
+        startDateTime,
+        endDateTime,
         isPublic,
         notes,
       })
@@ -206,29 +221,67 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-brand-text mb-1">Início *</label>
-            <input
-              type="datetime-local"
-              value={startDt}
-              onChange={(e) => setStartDt(e.target.value)}
-              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-            />
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={allDay}
+            onChange={(e) => {
+              setAllDay(e.target.checked)
+              setStartDt('')
+              setEndDt('')
+            }}
+            className="w-4 h-4 rounded border-brand-border accent-brand-text"
+          />
+          <span className="text-sm text-brand-text">Dia inteiro</span>
+        </label>
+
+        {allDay ? (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-brand-text mb-1">Data início *</label>
+              <input
+                type="date"
+                value={startDt}
+                onChange={(e) => { setStartDt(e.target.value); if (!endDt) setEndDt(e.target.value) }}
+                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-brand-text mb-1">Data fim</label>
+              <input
+                type="date"
+                value={endDt}
+                onChange={(e) => setEndDt(e.target.value)}
+                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              />
+              <p className="text-[10px] text-brand-dim mt-0.5">Se vazio, igual à data de início</p>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-brand-text mb-1">Fim *</label>
-            <input
-              type="datetime-local"
-              value={endDt}
-              onChange={(e) => setEndDt(e.target.value)}
-              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-            />
-            {!endValid && (
-              <p className="text-[10px] text-brand-red mt-0.5">Fim deve ser depois do início</p>
-            )}
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-brand-text mb-1">Início *</label>
+              <input
+                type="datetime-local"
+                value={startDt}
+                onChange={(e) => setStartDt(e.target.value)}
+                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-brand-text mb-1">Fim *</label>
+              <input
+                type="datetime-local"
+                value={endDt}
+                onChange={(e) => setEndDt(e.target.value)}
+                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              />
+              {!endValid && (
+                <p className="text-[10px] text-brand-red mt-0.5">Fim deve ser depois do início</p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex items-center gap-2">
           <input

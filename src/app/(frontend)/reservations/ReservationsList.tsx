@@ -55,6 +55,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
     endDateTime: '',
     attendeesCount: '',
   })
+  const [newAllDay, setNewAllDay] = useState(false)
   const [conflictMsg, setConflictMsg] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -98,6 +99,14 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
   async function handleCreateReservation() {
     setSaving(true)
     try {
+      let startDateTime = newForm.startDateTime
+      let endDateTime = newForm.endDateTime
+      if (newAllDay) {
+        // Usar T00:00 para forçar parse como horário local (não UTC)
+        startDateTime = new Date(`${newForm.startDateTime}T00:00:00`).toISOString()
+        const endDateStr = newForm.endDateTime || newForm.startDateTime
+        endDateTime = new Date(`${endDateStr}T23:59:59`).toISOString()
+      }
       const res = await fetch('/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,8 +115,8 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
           title: newForm.title,
           space: newForm.space,
           eventType: newForm.eventType,
-          startDateTime: newForm.startDateTime,
-          endDateTime: newForm.endDateTime,
+          startDateTime,
+          endDateTime,
           attendeesCount: newForm.attendeesCount ? Number(newForm.attendeesCount) : undefined,
           requestedBy: userId,
         }),
@@ -116,6 +125,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
         toast('Reserva criada com sucesso.', 'success')
         setShowNew(false)
         setNewForm({ title: '', space: '', eventType: 'reuniao', startDateTime: '', endDateTime: '', attendeesCount: '' })
+        setNewAllDay(false)
         setConflictMsg('')
         router.refresh()
       } else {
@@ -315,28 +325,69 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-brand-text mb-1">Início</label>
-              <input
-                type="datetime-local"
-                value={newForm.startDateTime}
-                onChange={(e) => setNewForm({ ...newForm, startDateTime: e.target.value })}
-                onBlur={checkConflict}
-                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-              />
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={newAllDay}
+              onChange={(e) => {
+                setNewAllDay(e.target.checked)
+                setNewForm({ ...newForm, startDateTime: '', endDateTime: '' })
+                setConflictMsg('')
+              }}
+              className="w-4 h-4 rounded border-brand-border accent-brand-text"
+            />
+            <span className="text-sm text-brand-text">Dia inteiro</span>
+          </label>
+
+          {newAllDay ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data início</label>
+                <input
+                  type="date"
+                  value={newForm.startDateTime}
+                  onChange={(e) => {
+                    setNewForm({ ...newForm, startDateTime: e.target.value, endDateTime: e.target.value })
+                  }}
+                  onBlur={checkConflict}
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data fim</label>
+                <input
+                  type="date"
+                  value={newForm.endDateTime}
+                  onChange={(e) => setNewForm({ ...newForm, endDateTime: e.target.value })}
+                  onBlur={checkConflict}
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-brand-text mb-1">Fim</label>
-              <input
-                type="datetime-local"
-                value={newForm.endDateTime}
-                onChange={(e) => setNewForm({ ...newForm, endDateTime: e.target.value })}
-                onBlur={checkConflict}
-                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-              />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Início</label>
+                <input
+                  type="datetime-local"
+                  value={newForm.startDateTime}
+                  onChange={(e) => setNewForm({ ...newForm, startDateTime: e.target.value })}
+                  onBlur={checkConflict}
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-text mb-1">Fim</label>
+                <input
+                  type="datetime-local"
+                  value={newForm.endDateTime}
+                  onChange={(e) => setNewForm({ ...newForm, endDateTime: e.target.value })}
+                  onBlur={checkConflict}
+                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {conflictMsg && (
             <p className="text-xs text-brand-red bg-brand-redL rounded-lg px-3 py-2">{conflictMsg}</p>

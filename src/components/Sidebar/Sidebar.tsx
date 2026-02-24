@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Calendar, Clock, Mail, Building2, CalendarCheck, Ban } from 'lucide-react'
+import { LayoutDashboard, Calendar, Clock, Mail, Building2, CalendarCheck, Ban, Settings, Users } from 'lucide-react'
 
 type NavItem = {
   label: string
@@ -53,9 +53,11 @@ export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCou
       ],
     },
     {
-      title: 'Pastor',
+      title: 'Gestão',
       roleRequired: ['pastor', 'secretaria'],
       items: [
+        { label: 'Gerenciar Espaços', href: '/spaces/manage', icon: <Settings size={16} /> },
+        { label: 'Usuários', href: '/users', icon: <Users size={16} /> },
         { label: 'Bloquear Agenda', href: '/block', icon: <Ban size={16} /> },
       ],
     },

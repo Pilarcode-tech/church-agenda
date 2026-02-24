@@ -13,17 +13,24 @@ import { useToast } from '@/hooks/useToast'
 type Request = {
   id: string
   reason: string
+  modality?: string
   suggestedDate: string
   estimatedDuration: number
   status: string
   confirmedDateTime?: string
   responseNote?: string
+  seenBy?: ({ id: string } | string | number)[]
   requestedBy: {
     id: string
     name: string
     ministerio?: string
     email: string
   }
+}
+
+const modalityLabels: Record<string, string> = {
+  presencial: 'Presencial',
+  online: 'Online',
 }
 
 type Props = {
@@ -50,8 +57,9 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
   const [newReason, setNewReason] = useState('')
   const [newDate, setNewDate] = useState('')
   const [newDuration, setNewDuration] = useState(30)
-  const [newMeetingWith, setNewMeetingWith] = useState('pastor')
+  const [newModality, setNewModality] = useState('presencial')
   const [creatingSaving, setCreatingSaving] = useState(false)
+  const [conflictMsg, setConflictMsg] = useState('')
 
   const canEvaluate = userRole === 'pastor' || userRole === 'secretaria'
 
@@ -106,17 +114,76 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
     }
   }
 
+  async function checkConflict(date?: string, duration?: number): Promise<boolean> {
+    const d = date ?? newDate
+    const dur = duration ?? newDuration
+    if (!d) {
+      setConflictMsg('')
+      return false
+    }
+    try {
+      // Buscar todos os eventos do dia para verificar conflitos
+      const dayStart = new Date(d)
+      dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(d)
+      dayEnd.setHours(23, 59, 59, 999)
+
+      const res = await fetch(
+        `/api/pastor-schedule?start=${dayStart.toISOString()}&end=${dayEnd.toISOString()}`,
+        { credentials: 'include' },
+      )
+      if (!res.ok) {
+        setConflictMsg('')
+        return false
+      }
+      const events = await res.json()
+      if (!Array.isArray(events)) {
+        setConflictMsg('')
+        return false
+      }
+
+      // Verificar se algum evento/bloqueio conflita com o horário solicitado
+      const reqStart = new Date(d).getTime()
+      const reqEnd = reqStart + dur * 60000
+
+      const conflicting = events.find((evt: any) => {
+        const evtStart = new Date(evt.start).getTime()
+        const evtEnd = new Date(evt.end).getTime()
+        return reqStart < evtEnd && reqEnd > evtStart
+      })
+
+      if (conflicting) {
+        const evtTitle = conflicting.title ?? 'Ocupado'
+        setConflictMsg(`Horário indisponível na agenda do pastor (${evtTitle}). Escolha outro horário.`)
+        return true
+      } else {
+        setConflictMsg('')
+        return false
+      }
+    } catch {
+      setConflictMsg('')
+      return false
+    }
+  }
+
   async function handleCreateRequest() {
     if (!newReason.trim() || !newDate) return
     setCreatingSaving(true)
     try {
+      // Verificar conflito antes de enviar (garante que o check roda mesmo se o onChange não completou)
+      const hasConflict = await checkConflict(newDate, newDuration)
+      if (hasConflict) {
+        setCreatingSaving(false)
+        return
+      }
+
       const res = await fetch('/api/meeting-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           requestedBy: userId,
-          meetingWith: newMeetingWith,
+          modality: newModality,
           reason: newReason,
           suggestedDate: new Date(newDate).toISOString(),
           estimatedDuration: newDuration,
@@ -129,7 +196,8 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
         setNewReason('')
         setNewDate('')
         setNewDuration(30)
-        setNewMeetingWith('pastor')
+        setNewModality('presencial')
+        setConflictMsg('')
         router.refresh()
       } else {
         toast('Erro ao enviar solicitação.', 'error')
@@ -180,11 +248,11 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
       {/* Table */}
       <div className="bg-brand-white border border-brand-border rounded-xl overflow-hidden">
         {/* Header */}
-        <div className="grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL" style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1fr 80px' }}>
+        <div className="grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL" style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 80px' }}>
           <span>Solicitante</span>
-          <span>Motivo</span>
+          <span>Assunto</span>
           <span>Sugestão de horário</span>
-          <span>Duração</span>
+          <span>Modalidade</span>
           <span>Status</span>
           <span>Ação</span>
         </div>
@@ -197,7 +265,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
             <div
               key={req.id}
               className="grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
-              style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1fr 1fr 80px' }}
+              style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 80px' }}
             >
               <div className="flex items-center gap-2.5">
                 <Avatar name={req.requestedBy?.name ?? '?'} size="sm" />
@@ -210,7 +278,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
               <p className="text-sm text-brand-muted">
                 {format(new Date(req.suggestedDate), "dd/MM/yyyy 'às' HH:mm")}
               </p>
-              <p className="text-sm text-brand-muted">{req.estimatedDuration} min</p>
+              <p className="text-sm text-brand-muted">{modalityLabels[req.modality ?? ''] ?? '—'}</p>
               <Chip status={req.status as any} />
               <div>
                 {req.status === 'pendente' && canEvaluate ? (
@@ -264,18 +332,24 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
                   <p className="text-[11px] text-brand-dim">{selected.requestedBy?.ministerio ?? ''}</p>
                 </div>
               </div>
+              <div className="pt-2">
+                <p className="text-[11px] text-brand-dim">Assunto / Motivo</p>
+                <p className="text-sm text-brand-text whitespace-pre-line">{selected.reason}</p>
+              </div>
               <div className="grid grid-cols-3 gap-3 pt-2">
                 <div>
-                  <p className="text-[11px] text-brand-dim">Motivo</p>
-                  <p className="text-sm text-brand-text">{selected.reason}</p>
-                </div>
-                <div>
                   <p className="text-[11px] text-brand-dim">Sugestão</p>
-                  <p className="text-sm text-brand-text">{format(new Date(selected.suggestedDate), "dd/MM/yyyy 'às' HH:mm")}</p>
+                  <p className="text-sm text-brand-text">
+                    {format(new Date(selected.suggestedDate), "dd/MM/yyyy 'às' HH:mm")}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[11px] text-brand-dim">Duração</p>
                   <p className="text-sm text-brand-text">{selected.estimatedDuration} min</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-brand-dim">Modalidade</p>
+                  <p className="text-sm text-brand-text">{modalityLabels[selected.modality ?? ''] ?? '—'}</p>
                 </div>
               </div>
             </div>
@@ -348,19 +422,20 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
       {/* Modal de nova solicitação */}
       <Modal
         open={newModalOpen}
-        onClose={() => setNewModalOpen(false)}
-        title="Nova solicitação de reunião"
+        onClose={() => { setNewModalOpen(false); setConflictMsg('') }}
+        title="Solicitar reunião com o Pastor"
+        wide
         footer={
           <>
             <button
-              onClick={() => setNewModalOpen(false)}
+              onClick={() => { setNewModalOpen(false); setConflictMsg('') }}
               className="bg-white text-brand-muted border border-brand-border rounded-lg px-4 py-2 text-sm hover:bg-brand-bg"
             >
               Cancelar
             </button>
             <button
               onClick={handleCreateRequest}
-              disabled={creatingSaving || !newReason.trim() || !newDate}
+              disabled={creatingSaving || !newReason.trim() || !newDate || !!conflictMsg}
               className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
             >
               {creatingSaving ? 'Enviando...' : 'Enviar solicitação'}
@@ -370,26 +445,29 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-brand-text mb-1">Reunião com *</label>
-            <select
-              value={newMeetingWith}
-              onChange={(e) => setNewMeetingWith(e.target.value)}
-              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
-            >
-              <option value="pastor">Pastor</option>
-              <option value="secretaria">Secretaria</option>
-              <option value="lideranca">Liderança geral</option>
-            </select>
+            <label className="block text-xs font-medium text-brand-text mb-1">Assunto / Motivo da reunião *</label>
+            <textarea
+              value={newReason}
+              onChange={(e) => setNewReason(e.target.value)}
+              rows={3}
+              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none resize-none"
+              placeholder="Descreva o assunto que deseja tratar na reunião com o pastor..."
+            />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-brand-text mb-1">Motivo da reunião *</label>
-            <input
-              value={newReason}
-              onChange={(e) => setNewReason(e.target.value)}
-              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm focus:border-brand-muted outline-none"
-              placeholder="Ex: Alinhar projeto do ministério de jovens"
-            />
+            <label className="block text-xs font-medium text-brand-text mb-1">Modalidade *</label>
+            <select
+              value={newModality}
+              onChange={(e) => setNewModality(e.target.value)}
+              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+            >
+              <option value="presencial">Presencial</option>
+              <option value="online">Online</option>
+            </select>
+            <p className="text-[11px] text-brand-dim mt-1">
+              A modalidade pode ser alterada pelo pastor ao avaliar a solicitação.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -398,7 +476,10 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
               <input
                 type="datetime-local"
                 value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
+                onChange={(e) => {
+                  setNewDate(e.target.value)
+                  checkConflict(e.target.value, newDuration)
+                }}
                 className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
               />
             </div>
@@ -406,7 +487,11 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
               <label className="block text-xs font-medium text-brand-text mb-1">Duração estimada</label>
               <select
                 value={newDuration}
-                onChange={(e) => setNewDuration(Number(e.target.value))}
+                onChange={(e) => {
+                  const dur = Number(e.target.value)
+                  setNewDuration(dur)
+                  checkConflict(newDate, dur)
+                }}
                 className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
               >
                 <option value={15}>15 minutos</option>
@@ -418,6 +503,10 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
               </select>
             </div>
           </div>
+
+          {conflictMsg && (
+            <p className="text-xs text-brand-red bg-brand-redL rounded-lg px-3 py-2">{conflictMsg}</p>
+          )}
 
           <p className="text-[11px] text-brand-dim">
             Sua solicitação será enviada para o pastor e a secretaria avaliarem.

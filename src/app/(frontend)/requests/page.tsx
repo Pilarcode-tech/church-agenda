@@ -17,10 +17,12 @@ export default async function RequestsPage() {
       sort: '-createdAt',
       depth: 1,
       limit: 100,
+      user,
     }),
     payload.count({
       collection: 'meeting-requests',
       where: { status: { equals: 'pendente' } },
+      user,
     }),
   ])
 
