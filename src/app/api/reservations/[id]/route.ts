@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { headers as getHeaders } from 'next/headers'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const payload = await getPayload({ config })
-  const headers = await getHeaders()
-  const { user } = await payload.auth({ headers })
+  const { user } = await payload.auth({ headers: req.headers })
 
   if (!user) {
     return NextResponse.json(
