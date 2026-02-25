@@ -1,59 +1,9 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db }: MigrateUpArgs): Promise<void> {
-  await db.execute(sql`
-    DO $$ BEGIN
-      CREATE TYPE "public"."enum_notifications_type" AS ENUM(
-        'REQUEST_CREATED',
-        'REQUEST_APPROVED',
-        'REQUEST_REJECTED',
-        'REQUEST_RESCHEDULED',
-        'RESERVATION_CREATED',
-        'RESERVATION_APPROVED',
-        'RESERVATION_REJECTED'
-      );
-    EXCEPTION WHEN duplicate_object THEN null;
-    END $$;
-
-    DO $$ BEGIN
-      CREATE TYPE "public"."enum_notifications_source_collection" AS ENUM(
-        'meeting-requests',
-        'reservations'
-      );
-    EXCEPTION WHEN duplicate_object THEN null;
-    END $$;
-
-    CREATE TABLE IF NOT EXISTS "notifications" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "recipient_id" integer NOT NULL,
-      "type" "public"."enum_notifications_type" NOT NULL,
-      "message" varchar NOT NULL,
-      "source_collection" "public"."enum_notifications_source_collection" NOT NULL,
-      "source_id" numeric NOT NULL,
-      "read" boolean DEFAULT false,
-      "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-      "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS "notifications_recipient_idx" ON "notifications" USING btree ("recipient_id");
-    CREATE INDEX IF NOT EXISTS "notifications_read_idx" ON "notifications" USING btree ("read");
-    CREATE INDEX IF NOT EXISTS "notifications_updated_at_idx" ON "notifications" USING btree ("updated_at");
-    CREATE INDEX IF NOT EXISTS "notifications_created_at_idx" ON "notifications" USING btree ("created_at");
-
-    DO $$ BEGIN
-      ALTER TABLE "notifications"
-        ADD CONSTRAINT "notifications_recipient_id_users_id_fk"
-        FOREIGN KEY ("recipient_id") REFERENCES "public"."users"("id")
-        ON DELETE set null ON UPDATE no action;
-    EXCEPTION WHEN duplicate_object THEN null;
-    END $$;
-  `)
+export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+    // Migration code
 }
 
-export async function down({ db }: MigrateDownArgs): Promise<void> {
-  await db.execute(sql`
-    DROP TABLE IF EXISTS "notifications";
-    DROP TYPE IF EXISTS "public"."enum_notifications_type";
-    DROP TYPE IF EXISTS "public"."enum_notifications_source_collection";
-  `)
+export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+    // Migration code
 }
