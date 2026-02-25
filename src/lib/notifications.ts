@@ -54,7 +54,7 @@ export async function createNotifications({
   )
 }
 
-export async function getAdminUserIds(): Promise<number[]> {
+export async function getAdminUserIds(): Promise<(string | number)[]> {
   const payload = await getPayload({ config })
 
   const result = await payload.find({
