@@ -11,12 +11,12 @@ type NotificationType =
   | 'RESERVATION_REJECTED'
 
 type CreateNotificationsParams = {
-  recipientIds: number[]
-  excludeUserId?: number
+  recipientIds: (string | number)[]
+  excludeUserId?: string | number
   type: NotificationType
   message: string
   sourceCollection: 'meeting-requests' | 'reservations'
-  sourceId: number
+  sourceId: string | number
 }
 
 export async function createNotifications({
@@ -29,8 +29,9 @@ export async function createNotifications({
 }: CreateNotificationsParams) {
   const payload = await getPayload({ config })
 
-  const filteredIds = excludeUserId
-    ? recipientIds.filter((id) => id !== excludeUserId)
+  const excludeId = excludeUserId != null ? String(excludeUserId) : null
+  const filteredIds = excludeId
+    ? recipientIds.filter((id) => String(id) !== excludeId)
     : recipientIds
 
   if (filteredIds.length === 0) return
@@ -40,11 +41,11 @@ export async function createNotifications({
       payload.create({
         collection: 'notifications',
         data: {
-          recipient: recipientId,
+          recipient: Number(recipientId),
           type,
           message,
           sourceCollection,
-          sourceId,
+          sourceId: Number(sourceId),
           read: false,
         },
         overrideAccess: true,
