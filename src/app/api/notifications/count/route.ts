@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { headers as getHeaders } from 'next/headers'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: req.headers })
+  const headers = await getHeaders()
+  const { user } = await payload.auth({ headers })
 
   if (!user) {
     return NextResponse.json(
