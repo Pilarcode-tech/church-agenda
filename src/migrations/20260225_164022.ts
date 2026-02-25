@@ -47,6 +47,20 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
         ON DELETE set null ON UPDATE no action;
     EXCEPTION WHEN duplicate_object THEN null;
     END $$;
+
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD COLUMN IF NOT EXISTS "notifications_id" integer;
+
+    DO $$ BEGIN
+      ALTER TABLE "payload_locked_documents_rels"
+        ADD CONSTRAINT "payload_locked_documents_rels_notifications_fk"
+        FOREIGN KEY ("notifications_id") REFERENCES "public"."notifications"("id")
+        ON DELETE cascade ON UPDATE no action;
+    EXCEPTION WHEN duplicate_object THEN null;
+    END $$;
+
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_notifications_id_idx"
+      ON "payload_locked_documents_rels" USING btree ("notifications_id");
   `)
 }
 
