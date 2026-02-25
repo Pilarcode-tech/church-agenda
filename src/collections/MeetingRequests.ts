@@ -100,19 +100,24 @@ const MeetingRequests: CollectionConfig = {
     afterChange: [
       async ({ req, doc, operation }) => {
         if (operation === 'update' && doc.status === 'aprovado' && doc.confirmedDateTime) {
-          const endDateTime = new Date(new Date(doc.confirmedDateTime).getTime() + (doc.estimatedDuration || 30) * 60000).toISOString()
-          await req.payload.create({
-            collection: 'pastor-schedule',
-            data: {
-              title: `Reunião — ${doc.reason}`,
-              type: 'reuniao',
-              startDateTime: doc.confirmedDateTime,
-              endDateTime,
-              isPublic: false,
-              notes: `Solicitado por: ${doc.requestedBy}`,
-              createdBy: req.user?.id,
-            },
-          })
+          try {
+            const endDateTime = new Date(new Date(doc.confirmedDateTime).getTime() + (doc.estimatedDuration || 30) * 60000).toISOString()
+            await req.payload.create({
+              collection: 'pastor-schedule',
+              data: {
+                title: `Reunião — ${doc.reason}`,
+                type: 'reuniao',
+                startDateTime: doc.confirmedDateTime,
+                endDateTime,
+                isPublic: false,
+                notes: `Solicitado por: ${typeof doc.requestedBy === 'object' ? (doc.requestedBy as any).name : doc.requestedBy}`,
+                createdBy: req.user?.id,
+              },
+              overrideAccess: true,
+            })
+          } catch (error) {
+            console.error('Erro ao criar evento na agenda do pastor:', error)
+          }
         }
       },
       async ({ req, doc, previousDoc, operation }) => {
