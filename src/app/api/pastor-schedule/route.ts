@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { headers as getHeaders } from 'next/headers'
+import { getApiUser } from '@/lib/auth'
 
 function getColorByType(type: string): string {
   const colors: Record<string, string> = {
@@ -17,8 +17,7 @@ function getColorByType(type: string): string {
 
 export async function GET(req: NextRequest) {
   const payload = await getPayload({ config })
-  const hdrs = await getHeaders()
-  const { user } = await payload.auth({ headers: hdrs })
+  const user = await getApiUser()
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -70,8 +69,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const payload = await getPayload({ config })
-  const hdrs = await getHeaders()
-  const { user } = await payload.auth({ headers: hdrs })
+  const user = await getApiUser()
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

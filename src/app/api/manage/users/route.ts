@@ -1,12 +1,10 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { headers as getHeaders } from 'next/headers'
+import { getApiUser } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  const payload = await getPayload({ config })
-  const headers = await getHeaders()
-  const { user } = await payload.auth({ headers })
+  const user = await getApiUser()
 
   if (!user) {
     return NextResponse.json({ errors: [{ message: 'Usuário não autenticado.' }] }, { status: 401 })
@@ -17,6 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const payload = await getPayload({ config })
     const body = await req.json()
     const created = await payload.create({
       collection: 'users',

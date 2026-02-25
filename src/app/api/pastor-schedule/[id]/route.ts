@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { headers as getHeaders } from 'next/headers'
+import { getApiUser } from '@/lib/auth'
 
 async function authenticate() {
   const payload = await getPayload({ config })
-  const hdrs = await getHeaders()
-  const { user } = await payload.auth({ headers: hdrs })
+  const user = await getApiUser()
 
   if (!user) return { payload, user: null, error: 'Unauthorized' }
 
