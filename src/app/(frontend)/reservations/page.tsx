@@ -17,10 +17,12 @@ export default async function ReservationsPage() {
       sort: '-createdAt',
       depth: 1,
       limit: 100,
+      user,
     }),
     payload.count({
       collection: 'reservations',
       where: { status: { equals: 'pendente' } },
+      user,
     }),
     payload.find({
       collection: 'spaces',

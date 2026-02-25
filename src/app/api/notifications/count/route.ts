@@ -14,16 +14,20 @@ export async function GET() {
     )
   }
 
-  const result = await payload.count({
-    collection: 'notifications',
-    where: {
-      and: [
-        { recipient: { equals: user.id } },
-        { read: { equals: false } },
-      ],
-    },
-    overrideAccess: true,
-  })
+  try {
+    const result = await payload.count({
+      collection: 'notifications',
+      where: {
+        and: [
+          { recipient: { equals: user.id } },
+          { read: { equals: false } },
+        ],
+      },
+      overrideAccess: true,
+    })
 
-  return NextResponse.json({ count: result.totalDocs })
+    return NextResponse.json({ count: result.totalDocs })
+  } catch {
+    return NextResponse.json({ count: 0 })
+  }
 }
