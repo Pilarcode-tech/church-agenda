@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import { SidebarProvider } from '@/components/SidebarContext'
+import { NotificationBell } from '@/components/NotificationBell'
 
 type MobileLayoutProps = {
   sidebar: React.ReactNode
@@ -71,9 +72,15 @@ export function MobileLayout({ sidebar, children, userMenu }: MobileLayoutProps)
           {sidebar}
         </div>
 
-        {/* UserMenu — desktop only (mobile version is inside sidebar) */}
-        <div className="hidden md:block fixed top-3 right-6 z-[60]">
+        {/* NotificationBell + UserMenu — desktop only (mobile version is inside sidebar) */}
+        <div className="hidden md:flex items-center gap-1 fixed top-3 right-6 z-[60]">
+          <NotificationBell />
           {userMenu}
+        </div>
+
+        {/* NotificationBell — mobile only (top-right) */}
+        <div className="md:hidden fixed top-3 right-3 z-[60]">
+          <NotificationBell />
         </div>
 
         {/* Main content */}

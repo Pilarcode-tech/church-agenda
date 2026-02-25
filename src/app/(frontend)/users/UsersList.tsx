@@ -89,8 +89,10 @@ export function UsersList({ users, userRole }: Props) {
     })
   }
 
+  const createFormValid = !!(form.name.trim() && form.email.trim() && form.password && form.password.length >= 6)
+
   async function handleCreate() {
-    if (!form.name.trim() || !form.email.trim() || !form.password) return
+    if (!createFormValid) return
     setSaving(true)
     try {
       const res = await fetch('/api/users', {
@@ -327,7 +329,7 @@ export function UsersList({ users, userRole }: Props) {
             </button>
             <button
               onClick={handleCreate}
-              disabled={saving || !form.name.trim() || !form.email.trim() || !form.password}
+              disabled={saving || !createFormValid}
               className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
             >
               {saving ? 'Criando...' : 'Criar usuário'}
@@ -363,9 +365,12 @@ export function UsersList({ users, userRole }: Props) {
                 type="password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${form.password && form.password.length < 6 ? 'border-brand-red' : 'border-brand-border'}`}
                 placeholder="Mínimo 6 caracteres"
               />
+              {form.password && form.password.length < 6 && (
+                <p className="text-[11px] text-brand-red mt-1">Mínimo 6 caracteres</p>
+              )}
             </div>
           </div>
 

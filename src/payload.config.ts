@@ -9,6 +9,7 @@ import Spaces from './collections/Spaces'
 import PastorSchedule from './collections/PastorSchedule'
 import MeetingRequests from './collections/MeetingRequests'
 import Reservations from './collections/Reservations'
+import Notifications from './collections/Notifications'
 import ChurchSettings from './globals/ChurchSettings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -28,6 +29,7 @@ export default buildConfig({
     PastorSchedule,
     MeetingRequests,
     Reservations,
+    Notifications,
   ],
   globals: [
     ChurchSettings,

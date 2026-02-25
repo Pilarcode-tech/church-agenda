@@ -61,6 +61,8 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
   const [creatingSaving, setCreatingSaving] = useState(false)
   const [conflictMsg, setConflictMsg] = useState('')
 
+  const [evalTouched, setEvalTouched] = useState(false)
+
   const canEvaluate = userRole === 'pastor' || userRole === 'secretaria'
 
   const filtered = filter === 'all'
@@ -79,10 +81,16 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
     setAction('aprovado')
     setConfirmedDateTime(req.suggestedDate)
     setResponseNote(req.responseNote ?? '')
+    setEvalTouched(false)
   }
+
+  const evalNeedsDate = action === 'aprovado' || action === 'reagendado'
+  const evalFormValid = !evalNeedsDate || !!confirmedDateTime
 
   async function handleSubmit() {
     if (!selected) return
+    setEvalTouched(true)
+    if (!evalFormValid) return
     setSaving(true)
     try {
       const body: any = {
@@ -352,7 +360,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
               <button onClick={() => setSelected(null)} className="bg-white text-brand-muted border border-brand-border rounded-lg px-4 py-2 text-sm hover:bg-brand-bg">
                 Cancelar
               </button>
-              <button onClick={handleSubmit} disabled={saving} className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 disabled:opacity-50">
+              <button onClick={handleSubmit} disabled={saving || !evalFormValid} className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 disabled:opacity-50">
                 {saving ? 'Salvando...' : 'Confirmar'}
               </button>
             </>
@@ -411,14 +419,17 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
                 {(action === 'aprovado' || action === 'reagendado') && (
                   <div>
                     <label className="block text-xs font-medium text-brand-text mb-1">
-                      {action === 'reagendado' ? 'Novo horário' : 'Horário confirmado'}
+                      {action === 'reagendado' ? 'Novo horário *' : 'Horário confirmado *'}
                     </label>
                     <input
                       type="datetime-local"
                       value={confirmedDateTime ? confirmedDateTime.slice(0, 16) : ''}
                       onChange={(e) => setConfirmedDateTime(e.target.value)}
-                      className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                      className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${evalTouched && !confirmedDateTime ? 'border-brand-red' : 'border-brand-border'}`}
                     />
+                    {evalTouched && !confirmedDateTime && (
+                      <p className="text-[11px] text-brand-red mt-1">Informe o horário confirmado</p>
+                    )}
                   </div>
                 )}
 

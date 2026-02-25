@@ -41,6 +41,15 @@ const resourceLabels: Record<string, string> = Object.fromEntries(
   resourceOptions.map((o) => [o.value, o.label]),
 )
 
+const eventTypeLabels: Record<string, string> = {
+  reuniao: 'Reunião',
+  evento: 'Evento',
+  ensaio: 'Ensaio',
+  gravacao: 'Gravação',
+  culto_especial: 'Culto especial',
+  outro: 'Outro',
+}
+
 type Space = {
   id: string
   name: string
@@ -78,6 +87,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
   const [newResourceNotes, setNewResourceNotes] = useState('')
   const [conflictMsg, setConflictMsg] = useState('')
   const [saving, setSaving] = useState(false)
+  const [newTouched, setNewTouched] = useState(false)
 
   // Approval modal
   const [selected, setSelected] = useState<Reservation | null>(null)
@@ -93,6 +103,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
   ]
 
   const selectedSpace = spaces.find((s) => s.id === newForm.space)
+  const newFormValid = !!(newForm.title && newForm.space && newForm.startDateTime && newForm.endDateTime)
 
   // Check conflict when dates change
   async function checkConflict() {
@@ -117,6 +128,8 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
   }
 
   async function handleCreateReservation() {
+    setNewTouched(true)
+    if (!newFormValid) return
     setSaving(true)
     try {
       let startDateTime = newForm.startDateTime
@@ -151,6 +164,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
         setNewResources([])
         setNewResourceNotes('')
         setConflictMsg('')
+        setNewTouched(false)
         router.refresh()
       } else {
         toast('Erro ao criar reserva.', 'error')
@@ -320,17 +334,17 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
       {/* New reservation modal */}
       <Modal
         open={showNew}
-        onClose={() => { setShowNew(false); setConflictMsg('') }}
+        onClose={() => { setShowNew(false); setConflictMsg(''); setNewTouched(false) }}
         title="Nova reserva"
         wide
         footer={
           <>
-            <button onClick={() => { setShowNew(false); setConflictMsg('') }} className="bg-white text-brand-muted border border-brand-border rounded-lg px-4 py-2 text-sm hover:bg-brand-bg">
+            <button onClick={() => { setShowNew(false); setConflictMsg(''); setNewTouched(false) }} className="bg-white text-brand-muted border border-brand-border rounded-lg px-4 py-2 text-sm hover:bg-brand-bg">
               Cancelar
             </button>
             <button
               onClick={handleCreateReservation}
-              disabled={saving || !!conflictMsg || !newForm.title || !newForm.space}
+              disabled={saving || !!conflictMsg || !newFormValid}
               className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
             >
               {saving ? 'Criando...' : 'Confirmar reserva'}
@@ -340,11 +354,11 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
       >
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-brand-text mb-1">Espaço</label>
+            <label className="block text-xs font-medium text-brand-text mb-1">Espaço *</label>
             <select
               value={newForm.space}
               onChange={(e) => { setNewForm({ ...newForm, space: e.target.value }); setConflictMsg('') }}
-              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${newTouched && !newForm.space ? 'border-brand-red' : 'border-brand-border'}`}
             >
               <option value="">Selecione um espaço</option>
               {spaces.map((s) => (
@@ -363,11 +377,11 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-brand-text mb-1">Nome do evento</label>
+            <label className="block text-xs font-medium text-brand-text mb-1">Nome do evento *</label>
             <input
               value={newForm.title}
               onChange={(e) => setNewForm({ ...newForm, title: e.target.value })}
-              className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+              className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${newTouched && !newForm.title ? 'border-brand-red' : 'border-brand-border'}`}
               placeholder="Ex: Ensaio do louvor"
             />
           </div>
@@ -405,7 +419,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
           {newAllDay ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-brand-text mb-1">Data início</label>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data início *</label>
                 <input
                   type="date"
                   value={newForm.startDateTime}
@@ -413,40 +427,40 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
                     setNewForm({ ...newForm, startDateTime: e.target.value, endDateTime: e.target.value })
                   }}
                   onBlur={checkConflict}
-                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                  className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${newTouched && !newForm.startDateTime ? 'border-brand-red' : 'border-brand-border'}`}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-brand-text mb-1">Data fim</label>
+                <label className="block text-xs font-medium text-brand-text mb-1">Data fim *</label>
                 <input
                   type="date"
                   value={newForm.endDateTime}
                   onChange={(e) => setNewForm({ ...newForm, endDateTime: e.target.value })}
                   onBlur={checkConflict}
-                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                  className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${newTouched && !newForm.endDateTime ? 'border-brand-red' : 'border-brand-border'}`}
                 />
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-brand-text mb-1">Início</label>
+                <label className="block text-xs font-medium text-brand-text mb-1">Início *</label>
                 <input
                   type="datetime-local"
                   value={newForm.startDateTime}
                   onChange={(e) => setNewForm({ ...newForm, startDateTime: e.target.value })}
                   onBlur={checkConflict}
-                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                  className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${newTouched && !newForm.startDateTime ? 'border-brand-red' : 'border-brand-border'}`}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-brand-text mb-1">Fim</label>
+                <label className="block text-xs font-medium text-brand-text mb-1">Fim *</label>
                 <input
                   type="datetime-local"
                   value={newForm.endDateTime}
                   onChange={(e) => setNewForm({ ...newForm, endDateTime: e.target.value })}
                   onBlur={checkConflict}
-                  className="w-full bg-brand-white border border-brand-border rounded-lg px-3 py-2 text-sm outline-none"
+                  className={`w-full bg-brand-white border rounded-lg px-3 py-2 text-sm outline-none ${newTouched && !newForm.endDateTime ? 'border-brand-red' : 'border-brand-border'}`}
                 />
               </div>
             </div>
@@ -524,11 +538,15 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
       >
         {selected && (
           <div className="space-y-4">
-            <div className="bg-brand-bg rounded-lg p-4 space-y-2">
+            <div className="bg-brand-bg rounded-lg p-4 space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <p className="text-[11px] text-brand-dim">Evento</p>
                   <p className="text-sm text-brand-text font-medium">{selected.title}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-brand-dim">Tipo</p>
+                  <p className="text-sm text-brand-text">{eventTypeLabels[selected.eventType] ?? selected.eventType}</p>
                 </div>
                 <div>
                   <p className="text-[11px] text-brand-dim">Espaço</p>
@@ -543,10 +561,19 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
                 <div>
                   <p className="text-[11px] text-brand-dim">Solicitante</p>
                   <p className="text-sm text-brand-text">{selected.requestedBy?.name}</p>
+                  {selected.requestedBy?.ministerio && (
+                    <p className="text-[11px] text-brand-muted">{selected.requestedBy.ministerio}</p>
+                  )}
                 </div>
+                {selected.attendeesCount != null && selected.attendeesCount > 0 && (
+                  <div>
+                    <p className="text-[11px] text-brand-dim">Pessoas estimadas</p>
+                    <p className="text-sm text-brand-text">{selected.attendeesCount}</p>
+                  </div>
+                )}
               </div>
               {selected.resourcesNeeded && selected.resourcesNeeded.length > 0 && (
-                <div className="pt-2">
+                <div className="pt-2 border-t border-brand-borderL">
                   <p className="text-[11px] text-brand-dim mb-1.5">Recursos solicitados</p>
                   <div className="flex flex-wrap gap-1.5">
                     {selected.resourcesNeeded.map((r) => (
@@ -561,7 +588,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
                 </div>
               )}
               {selected.resourceNotes && (
-                <div className="pt-1">
+                <div className="pt-2 border-t border-brand-borderL">
                   <p className="text-[11px] text-brand-dim">Observações sobre recursos</p>
                   <p className="text-sm text-brand-text whitespace-pre-line">{selected.resourceNotes}</p>
                 </div>

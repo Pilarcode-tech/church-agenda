@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { createNotifications, getAdminUserIds } from '@/lib/notifications'
 
 const MeetingRequests: CollectionConfig = {
   slug: 'meeting-requests',
@@ -112,6 +113,60 @@ const MeetingRequests: CollectionConfig = {
               createdBy: req.user?.id,
             },
           })
+        }
+      },
+      async ({ req, doc, previousDoc, operation }) => {
+        try {
+          if (operation === 'create') {
+            const adminIds = await getAdminUserIds()
+            const requesterName =
+              typeof doc.requestedBy === 'object'
+                ? (doc.requestedBy as any).name
+                : undefined
+            const name = requesterName || req.user?.name || 'Alguém'
+            const reason = doc.reason?.length > 50 ? doc.reason.slice(0, 50) + '...' : doc.reason
+            await createNotifications({
+              recipientIds: adminIds,
+              excludeUserId: req.user?.id,
+              type: 'REQUEST_CREATED',
+              message: `${name} solicitou reunião: ${reason}`,
+              sourceCollection: 'meeting-requests',
+              sourceId: doc.id,
+            })
+          }
+
+          if (operation === 'update' && previousDoc?.status === 'pendente' && doc.status !== 'pendente') {
+            const requesterId =
+              typeof doc.requestedBy === 'object'
+                ? (doc.requestedBy as any).id
+                : doc.requestedBy
+            if (requesterId) {
+              const typeMap: Record<string, 'REQUEST_APPROVED' | 'REQUEST_REJECTED' | 'REQUEST_RESCHEDULED'> = {
+                aprovado: 'REQUEST_APPROVED',
+                recusado: 'REQUEST_REJECTED',
+                reagendado: 'REQUEST_RESCHEDULED',
+              }
+              const notifType = typeMap[doc.status]
+              if (notifType) {
+                const statusLabels: Record<string, string> = {
+                  aprovado: 'aprovada',
+                  recusado: 'recusada',
+                  reagendado: 'reagendada',
+                }
+                const reason = doc.reason?.length > 40 ? doc.reason.slice(0, 40) + '...' : doc.reason
+                await createNotifications({
+                  recipientIds: [requesterId],
+                  excludeUserId: req.user?.id,
+                  type: notifType,
+                  message: `Sua solicitação "${reason}" foi ${statusLabels[doc.status]}`,
+                  sourceCollection: 'meeting-requests',
+                  sourceId: doc.id,
+                })
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao criar notificação de solicitação:', error)
         }
       },
     ],

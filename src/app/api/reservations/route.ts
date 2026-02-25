@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       collection: 'reservations',
       data: {
         title: body.title,
-        space: body.space,
+        space: Number(body.space),
         eventType: body.eventType,
         startDateTime: body.startDateTime,
         endDateTime: body.endDateTime,

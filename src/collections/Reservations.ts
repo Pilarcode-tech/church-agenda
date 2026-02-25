@@ -1,4 +1,5 @@
 import { CollectionConfig } from 'payload'
+import { createNotifications, getAdminUserIds } from '@/lib/notifications'
 
 const Reservations: CollectionConfig = {
   slug: 'reservations',
@@ -128,6 +129,55 @@ const Reservations: CollectionConfig = {
           }
         }
         return data
+      },
+    ],
+    afterChange: [
+      async ({ req, doc, previousDoc, operation }) => {
+        try {
+          if (operation === 'create' && doc.status === 'pendente') {
+            const adminIds = await getAdminUserIds()
+            const requesterName =
+              typeof doc.requestedBy === 'object'
+                ? (doc.requestedBy as any).name
+                : undefined
+            const name = requesterName || req.user?.name || 'Alguém'
+            await createNotifications({
+              recipientIds: adminIds,
+              excludeUserId: req.user?.id,
+              type: 'RESERVATION_CREATED',
+              message: `${name} solicitou reserva: ${doc.title}`,
+              sourceCollection: 'reservations',
+              sourceId: doc.id,
+            })
+          }
+
+          if (operation === 'update' && previousDoc?.status === 'pendente' && doc.status !== 'pendente') {
+            const requesterId =
+              typeof doc.requestedBy === 'object'
+                ? (doc.requestedBy as any).id
+                : doc.requestedBy
+            if (requesterId) {
+              const typeMap: Record<string, 'RESERVATION_APPROVED' | 'RESERVATION_REJECTED'> = {
+                aprovado: 'RESERVATION_APPROVED',
+                recusado: 'RESERVATION_REJECTED',
+              }
+              const notifType = typeMap[doc.status]
+              if (notifType) {
+                const statusLabel = doc.status === 'aprovado' ? 'aprovada' : 'recusada'
+                await createNotifications({
+                  recipientIds: [requesterId],
+                  excludeUserId: req.user?.id,
+                  type: notifType,
+                  message: `Sua reserva "${doc.title}" foi ${statusLabel}`,
+                  sourceCollection: 'reservations',
+                  sourceId: doc.id,
+                })
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao criar notificação de reserva:', error)
+        }
       },
     ],
   },
