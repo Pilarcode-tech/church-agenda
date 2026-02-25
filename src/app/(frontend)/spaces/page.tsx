@@ -89,9 +89,9 @@ export default async function SpacesPage() {
         title="Espaços e Salas"
         subtitle="Visualize espaços disponíveis e suas reservas"
       />
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         {/* Space cards */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {spaces.docs.map((space) => {
             const free = isCurrentlyFree(space.id)
             const resources = (space.resources as any[]) ?? []
@@ -146,7 +146,7 @@ export default async function SpacesPage() {
         {/* Availability today */}
         <div>
           <h2 className="font-serif text-base text-brand-text mb-4">Disponibilidade hoje</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {spaces.docs.map((space) => {
               const blocks = getAvailabilityBlocks(space.id)
 

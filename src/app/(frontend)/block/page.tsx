@@ -36,7 +36,7 @@ export default async function BlockPage() {
         title="Bloquear Agenda"
         subtitle="Bloqueie períodos na agenda do pastor"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <BlockForm blocks={JSON.parse(JSON.stringify(blocks.docs))} />
       </div>
     </>

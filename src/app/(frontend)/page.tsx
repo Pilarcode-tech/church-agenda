@@ -115,9 +115,9 @@ export default async function DashboardPage() {
         subtitle={format(now, "EEEE, d 'de' MMMM", { locale: ptBR })}
       />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         {/* Stat cards */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <div key={stat.label} className="bg-brand-white border border-brand-border rounded-xl p-4">
               <p className="text-xs text-brand-muted">{stat.label}</p>
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Grid 2 colunas */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Solicitações pendentes */}
           <div className="bg-brand-white border border-brand-border rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">

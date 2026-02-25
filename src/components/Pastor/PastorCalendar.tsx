@@ -180,58 +180,57 @@ export default function PastorCalendar({ userRole, userName }: PastorCalendarPro
   return (
     <div className="flex flex-col gap-4">
       {/* CONTROLES DO CALENDÁRIO */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {/* Navegação */}
-        <button
-          onClick={() => navigate('prev')}
-          className="w-8 h-8 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg flex items-center justify-center transition-colors"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <button
-          onClick={() => navigate('next')}
-          className="w-8 h-8 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg flex items-center justify-center transition-colors"
-        >
-          <ChevronRight size={16} />
-        </button>
-        <button
-          onClick={() => navigate('today')}
-          className="px-3 h-8 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg text-xs font-medium transition-colors"
-        >
-          Hoje
-        </button>
-
-        {/* Título do período */}
-        <h2 className="font-serif text-xl text-brand-text capitalize ml-1">
-          {getPeriodTitle()}
-        </h2>
-
-        {/* Tabs de visão */}
-        <div className="ml-4 flex bg-brand-bg border border-brand-border rounded-lg p-0.5 gap-0.5">
-          {(['month', 'week', 'day'] as ViewType[]).map((v) => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                view === v
-                  ? 'bg-brand-white text-brand-text shadow-sm'
-                  : 'text-brand-muted hover:text-brand-text'
-              }`}
-            >
-              {v === 'month' ? 'Mês' : v === 'week' ? 'Semana' : 'Dia'}
-            </button>
-          ))}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3 md:flex-wrap">
+        {/* Navegação + Título */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('prev')}
+            className="w-8 h-8 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg flex items-center justify-center transition-colors"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={() => navigate('next')}
+            className="w-8 h-8 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg flex items-center justify-center transition-colors"
+          >
+            <ChevronRight size={16} />
+          </button>
+          <button
+            onClick={() => navigate('today')}
+            className="px-3 h-8 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg text-xs font-medium transition-colors"
+          >
+            Hoje
+          </button>
+          <h2 className="font-serif text-lg md:text-xl text-brand-text capitalize ml-1 truncate">
+            {getPeriodTitle()}
+          </h2>
         </div>
 
-        {/* Ações */}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Tabs de visão + Ações */}
+        <div className="flex items-center gap-2 flex-wrap md:ml-auto">
+          <div className="flex bg-brand-bg border border-brand-border rounded-lg p-0.5 gap-0.5">
+            {(['month', 'week', 'day'] as ViewType[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  view === v
+                    ? 'bg-brand-white text-brand-text shadow-sm'
+                    : 'text-brand-muted hover:text-brand-text'
+                }`}
+              >
+                {v === 'month' ? 'Mês' : v === 'week' ? 'Semana' : 'Dia'}
+              </button>
+            ))}
+          </div>
+
           {canEdit && (
             <>
               <button
                 onClick={() => setBlockModalOpen(true)}
                 className="px-3 py-1.5 rounded-lg border border-brand-border bg-brand-white text-brand-muted hover:bg-brand-bg text-xs font-medium transition-colors flex items-center gap-1.5"
               >
-                <Ban size={14} /> Bloquear período
+                <Ban size={14} /> <span className="hidden sm:inline">Bloquear período</span>
               </button>
               <button
                 onClick={() => {
@@ -241,12 +240,12 @@ export default function PastorCalendar({ userRole, userName }: PastorCalendarPro
                 }}
                 className="px-3 py-1.5 rounded-lg bg-brand-text text-white hover:bg-stone-800 text-xs font-medium transition-colors flex items-center gap-1.5"
               >
-                <Plus size={14} /> Novo compromisso
+                <Plus size={14} /> <span className="hidden sm:inline">Novo compromisso</span>
               </button>
             </>
           )}
           <span
-            className={`text-xs font-semibold px-2 py-1 rounded-full ${
+            className={`hidden sm:inline text-xs font-semibold px-2 py-1 rounded-full ${
               canEdit
                 ? 'bg-brand-accentL text-brand-accent'
                 : 'bg-brand-bg text-brand-muted border border-brand-border'

@@ -212,14 +212,14 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
   return (
     <>
       {/* Header com botão de nova solicitação */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
         {/* Tabs */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap ${
                 filter === tab.key
                   ? 'bg-brand-text text-white font-medium'
                   : 'text-brand-muted hover:bg-brand-bg'
@@ -239,7 +239,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
 
         <button
           onClick={() => setNewModalOpen(true)}
-          className="px-3 py-1.5 rounded-lg bg-brand-text text-white hover:bg-stone-800 text-xs font-medium transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg bg-brand-text text-white hover:bg-stone-800 text-xs font-medium transition-colors flex items-center gap-1.5 self-start md:self-auto"
         >
           <Plus size={14} /> Nova solicitação
         </button>
@@ -247,8 +247,8 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
 
       {/* Table */}
       <div className="bg-brand-white border border-brand-border rounded-xl overflow-hidden">
-        {/* Header */}
-        <div className="grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL" style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 80px' }}>
+        {/* Desktop Header */}
+        <div className="hidden md:grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL" style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 80px' }}>
           <span>Solicitante</span>
           <span>Assunto</span>
           <span>Sugestão de horário</span>
@@ -262,40 +262,78 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
           <EmptyState icon={<Mail size={36} strokeWidth={1.5} />} message="Nenhuma solicitação encontrada" />
         ) : (
           filtered.map((req) => (
-            <div
-              key={req.id}
-              className="grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
-              style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 80px' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <Avatar name={req.requestedBy?.name ?? '?'} size="sm" />
-                <div className="min-w-0">
-                  <p className="text-sm text-brand-text truncate">{req.requestedBy?.name ?? '—'}</p>
-                  <p className="text-[11px] text-brand-dim truncate">{req.requestedBy?.ministerio ?? ''}</p>
+            <div key={req.id}>
+              {/* Desktop row */}
+              <div
+                className="hidden md:grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
+                style={{ gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 80px' }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Avatar name={req.requestedBy?.name ?? '?'} size="sm" />
+                  <div className="min-w-0">
+                    <p className="text-sm text-brand-text truncate">{req.requestedBy?.name ?? '—'}</p>
+                    <p className="text-[11px] text-brand-dim truncate">{req.requestedBy?.ministerio ?? ''}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-brand-text truncate">{req.reason}</p>
+                <p className="text-sm text-brand-muted">
+                  {format(new Date(req.suggestedDate), "dd/MM/yyyy 'às' HH:mm")}
+                </p>
+                <p className="text-sm text-brand-muted">{modalityLabels[req.modality ?? ''] ?? '—'}</p>
+                <Chip status={req.status as any} />
+                <div>
+                  {req.status === 'pendente' && canEvaluate ? (
+                    <button
+                      onClick={() => openModal(req)}
+                      className="text-xs text-brand-accent hover:underline font-medium"
+                    >
+                      Avaliar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => openModal(req)}
+                      className="text-xs text-brand-muted hover:underline"
+                    >
+                      Ver
+                    </button>
+                  )}
                 </div>
               </div>
-              <p className="text-sm text-brand-text truncate">{req.reason}</p>
-              <p className="text-sm text-brand-muted">
-                {format(new Date(req.suggestedDate), "dd/MM/yyyy 'às' HH:mm")}
-              </p>
-              <p className="text-sm text-brand-muted">{modalityLabels[req.modality ?? ''] ?? '—'}</p>
-              <Chip status={req.status as any} />
-              <div>
-                {req.status === 'pendente' && canEvaluate ? (
-                  <button
-                    onClick={() => openModal(req)}
-                    className="text-xs text-brand-accent hover:underline font-medium"
-                  >
-                    Avaliar
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => openModal(req)}
-                    className="text-xs text-brand-muted hover:underline"
-                  >
-                    Ver
-                  </button>
-                )}
+
+              {/* Mobile card */}
+              <div className="md:hidden px-4 py-3 border-b border-brand-borderL last:border-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar name={req.requestedBy?.name ?? '?'} size="sm" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-brand-text truncate">{req.requestedBy?.name ?? '—'}</p>
+                      <p className="text-[11px] text-brand-dim truncate">{req.requestedBy?.ministerio ?? ''}</p>
+                    </div>
+                  </div>
+                  <Chip status={req.status as any} />
+                </div>
+                <p className="text-sm text-brand-text mb-1 line-clamp-2">{req.reason}</p>
+                <div className="flex items-center gap-3 text-[12px] text-brand-muted mb-2">
+                  <span>{format(new Date(req.suggestedDate), "dd/MM 'às' HH:mm")}</span>
+                  <span>{modalityLabels[req.modality ?? ''] ?? '—'}</span>
+                </div>
+                <div>
+                  {req.status === 'pendente' && canEvaluate ? (
+                    <button
+                      onClick={() => openModal(req)}
+                      className="text-xs text-brand-accent hover:underline font-medium"
+                    >
+                      Avaliar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => openModal(req)}
+                      className="text-xs text-brand-muted hover:underline"
+                    >
+                      Ver
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -336,7 +374,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
                 <p className="text-[11px] text-brand-dim">Assunto / Motivo</p>
                 <p className="text-sm text-brand-text whitespace-pre-line">{selected.reason}</p>
               </div>
-              <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                 <div>
                   <p className="text-[11px] text-brand-dim">Sugestão</p>
                   <p className="text-sm text-brand-text">
@@ -470,7 +508,7 @@ export function RequestsList({ requests, pendingCount, userRole, userId }: Props
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Data e horário sugerido *</label>
               <input

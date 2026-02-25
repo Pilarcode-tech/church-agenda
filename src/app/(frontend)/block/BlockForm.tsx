@@ -97,7 +97,7 @@ export function BlockForm({ blocks }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Formulário */}
       <div className="bg-brand-white border border-brand-border rounded-xl p-5">
         <h2 className="font-serif text-base text-brand-text mb-4">Novo bloqueio</h2>
@@ -130,7 +130,7 @@ export function BlockForm({ blocks }: Props) {
           </label>
 
           {allDay ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-brand-text mb-1">Data início</label>
                 <input
@@ -153,7 +153,7 @@ export function BlockForm({ blocks }: Props) {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-brand-text mb-1">Data/hora início</label>
                 <input

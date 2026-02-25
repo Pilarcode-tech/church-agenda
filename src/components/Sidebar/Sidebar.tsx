@@ -25,9 +25,10 @@ type SidebarProps = {
   } | null
   pendingRequestsCount?: number
   pendingReservationsCount?: number
+  userMenu?: React.ReactNode
 }
 
-export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCount = 0 }: SidebarProps) {
+export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCount = 0, userMenu }: SidebarProps) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -64,7 +65,7 @@ export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCou
   ]
 
   return (
-    <aside className="w-[232px] h-screen bg-brand-white border-r border-brand-border flex flex-col fixed left-0 top-0 z-40">
+    <aside className="w-[232px] h-screen bg-brand-white border-r border-brand-border flex flex-col">
       {/* Logo */}
       <div className="px-4 pt-5 pb-4 border-b border-brand-borderL">
         <h1 className="font-serif text-xl text-brand-text">Verbo Arujá</h1>
@@ -114,6 +115,12 @@ export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCou
         })}
       </nav>
 
+      {/* UserMenu inside sidebar on mobile */}
+      {userMenu && (
+        <div className="md:hidden border-t border-brand-borderL px-3 py-3">
+          {userMenu}
+        </div>
+      )}
     </aside>
   )
 }

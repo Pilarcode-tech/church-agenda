@@ -25,7 +25,7 @@ export default async function CalendarPage() {
         title="Calendário Geral"
         subtitle="Visualize todos os eventos e reservas aprovadas"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <div className="bg-brand-white border border-brand-border rounded-xl p-5">
           <CalendarView spaces={spaceOptions} />
         </div>

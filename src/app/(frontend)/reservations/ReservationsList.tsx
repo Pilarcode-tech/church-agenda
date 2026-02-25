@@ -192,13 +192,13 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
   return (
     <>
       {/* Tabs + new button */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+        <div className="flex items-center gap-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap ${
                 filter === tab.key
                   ? 'bg-brand-text text-white font-medium'
                   : 'text-brand-muted hover:bg-brand-bg'
@@ -217,7 +217,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
         </div>
         <button
           onClick={() => setShowNew(true)}
-          className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 flex items-center gap-1.5"
+          className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 flex items-center gap-1.5 self-start md:self-auto"
         >
           <Plus size={14} /> Nova reserva
         </button>
@@ -225,7 +225,8 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
 
       {/* Table */}
       <div className="bg-brand-white border border-brand-border rounded-xl overflow-hidden">
-        <div className="grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL" style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1.5fr 1fr 80px' }}>
+        {/* Desktop header */}
+        <div className="hidden md:grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL" style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1.5fr 1fr 80px' }}>
           <span>Evento</span>
           <span>Espaço</span>
           <span>Data e hora</span>
@@ -238,40 +239,78 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
           <EmptyState icon={<CalendarCheck size={36} strokeWidth={1.5} />} message="Nenhuma reserva encontrada" />
         ) : (
           filtered.map((res) => (
-            <div
-              key={res.id}
-              className="grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
-              style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1.5fr 1fr 80px' }}
-            >
-              <div>
-                <p className="text-sm text-brand-text truncate">{res.title}</p>
-                <p className="text-[11px] text-brand-dim capitalize">{res.eventType?.replace('_', ' ')}</p>
+            <div key={res.id}>
+              {/* Desktop row */}
+              <div
+                className="hidden md:grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
+                style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr 1.5fr 1fr 80px' }}
+              >
+                <div>
+                  <p className="text-sm text-brand-text truncate">{res.title}</p>
+                  <p className="text-[11px] text-brand-dim capitalize">{res.eventType?.replace('_', ' ')}</p>
+                </div>
+                <p className="text-sm text-brand-muted truncate">{res.space?.name ?? '—'}</p>
+                <p className="text-sm text-brand-muted">
+                  {format(new Date(res.startDateTime), "dd/MM 'às' HH:mm")}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Avatar name={res.requestedBy?.name ?? '?'} size="sm" />
+                  <span className="text-sm text-brand-text truncate">{res.requestedBy?.name ?? '—'}</span>
+                </div>
+                <Chip status={res.status as any} />
+                <div>
+                  {res.status === 'pendente' && canApprove ? (
+                    <button
+                      onClick={() => { setSelected(res); setApprovalAction('aprovado'); setApprovalNote('') }}
+                      className="text-xs text-brand-green font-medium hover:underline"
+                    >
+                      Aprovar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSelected(res)}
+                      className="text-xs text-brand-muted hover:underline"
+                    >
+                      Ver
+                    </button>
+                  )}
+                </div>
               </div>
-              <p className="text-sm text-brand-muted truncate">{res.space?.name ?? '—'}</p>
-              <p className="text-sm text-brand-muted">
-                {format(new Date(res.startDateTime), "dd/MM 'às' HH:mm")}
-              </p>
-              <div className="flex items-center gap-2">
-                <Avatar name={res.requestedBy?.name ?? '?'} size="sm" />
-                <span className="text-sm text-brand-text truncate">{res.requestedBy?.name ?? '—'}</span>
-              </div>
-              <Chip status={res.status as any} />
-              <div>
-                {res.status === 'pendente' && canApprove ? (
-                  <button
-                    onClick={() => { setSelected(res); setApprovalAction('aprovado'); setApprovalNote('') }}
-                    className="text-xs text-brand-green font-medium hover:underline"
-                  >
-                    Aprovar
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setSelected(res)}
-                    className="text-xs text-brand-muted hover:underline"
-                  >
-                    Ver
-                  </button>
-                )}
+
+              {/* Mobile card */}
+              <div className="md:hidden px-4 py-3 border-b border-brand-borderL last:border-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-brand-text truncate">{res.title}</p>
+                    <p className="text-[11px] text-brand-dim capitalize">{res.eventType?.replace('_', ' ')}</p>
+                  </div>
+                  <Chip status={res.status as any} />
+                </div>
+                <div className="space-y-1 text-[12px] text-brand-muted mb-2">
+                  <p>{res.space?.name ?? '—'}</p>
+                  <p>{format(new Date(res.startDateTime), "dd/MM 'às' HH:mm")}</p>
+                  <div className="flex items-center gap-1.5">
+                    <Avatar name={res.requestedBy?.name ?? '?'} size="sm" />
+                    <span className="truncate">{res.requestedBy?.name ?? '—'}</span>
+                  </div>
+                </div>
+                <div>
+                  {res.status === 'pendente' && canApprove ? (
+                    <button
+                      onClick={() => { setSelected(res); setApprovalAction('aprovado'); setApprovalNote('') }}
+                      className="text-xs text-brand-green font-medium hover:underline"
+                    >
+                      Aprovar
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setSelected(res)}
+                      className="text-xs text-brand-muted hover:underline"
+                    >
+                      Ver
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -364,7 +403,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
           </label>
 
           {newAllDay ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-brand-text mb-1">Data início</label>
                 <input
@@ -389,7 +428,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-brand-text mb-1">Início</label>
                 <input
@@ -430,7 +469,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
 
           <div>
             <label className="block text-xs font-medium text-brand-text mb-2">O que vai precisar?</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {resourceOptions.map((opt) => (
                 <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -486,7 +525,7 @@ export function ReservationsList({ reservations, pendingCount, userRole, userId,
         {selected && (
           <div className="space-y-4">
             <div className="bg-brand-bg rounded-lg p-4 space-y-2">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <p className="text-[11px] text-brand-dim">Evento</p>
                   <p className="text-sm text-brand-text font-medium">{selected.title}</p>

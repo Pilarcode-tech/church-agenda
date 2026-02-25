@@ -28,7 +28,7 @@ export default async function ManageSpacesPage() {
         title="Gerenciar Espaços"
         subtitle="Crie, edite e gerencie os espaços da igreja"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <SpacesList
           spaces={JSON.parse(JSON.stringify(allSpaces.docs))}
           userRole={role}

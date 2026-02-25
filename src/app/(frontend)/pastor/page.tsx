@@ -15,7 +15,7 @@ export default async function PastorPage() {
         title="Agenda do Pastor"
         subtitle="Gerencie compromissos e horários"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <PastorCalendar
           userRole={role as 'pastor' | 'secretaria' | 'lider'}
           userName={name}

@@ -194,13 +194,13 @@ export function SpacesList({ spaces, userRole }: Props) {
   return (
     <>
       {/* Tabs + new button */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+        <div className="flex items-center gap-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap ${
                 filter === tab.key
                   ? 'bg-brand-text text-white font-medium'
                   : 'text-brand-muted hover:bg-brand-bg'
@@ -221,7 +221,7 @@ export function SpacesList({ spaces, userRole }: Props) {
         </div>
         <button
           onClick={() => setShowNew(true)}
-          className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 flex items-center gap-1.5"
+          className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 flex items-center gap-1.5 self-start md:self-auto"
         >
           <Plus size={14} /> Novo espaço
         </button>
@@ -229,8 +229,9 @@ export function SpacesList({ spaces, userRole }: Props) {
 
       {/* Table */}
       <div className="bg-brand-white border border-brand-border rounded-xl overflow-hidden">
+        {/* Desktop header */}
         <div
-          className="grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL"
+          className="hidden md:grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL"
           style={{ gridTemplateColumns: '2fr 1.5fr 1fr 1.5fr 1fr 100px' }}
         >
           <span>Nome</span>
@@ -245,42 +246,80 @@ export function SpacesList({ spaces, userRole }: Props) {
           <EmptyState icon={<Building2 size={36} strokeWidth={1.5} />} message="Nenhum espaço encontrado" />
         ) : (
           filtered.map((space) => (
-            <div
-              key={space.id}
-              className="grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
-              style={{ gridTemplateColumns: '2fr 1.5fr 1fr 1.5fr 1fr 100px' }}
-            >
-              <div>
-                <p className="text-sm text-brand-text font-medium">{space.name}</p>
-                {space.description && (
-                  <p className="text-[11px] text-brand-dim truncate">{space.description}</p>
-                )}
+            <div key={space.id}>
+              {/* Desktop row */}
+              <div
+                className="hidden md:grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
+                style={{ gridTemplateColumns: '2fr 1.5fr 1fr 1.5fr 1fr 100px' }}
+              >
+                <div>
+                  <p className="text-sm text-brand-text font-medium">{space.name}</p>
+                  {space.description && (
+                    <p className="text-[11px] text-brand-dim truncate">{space.description}</p>
+                  )}
+                </div>
+                <p className="text-sm text-brand-muted">{typeLabels[space.type] ?? space.type}</p>
+                <p className="text-sm text-brand-muted">{space.capacity ? `${space.capacity} pessoas` : '—'}</p>
+                <div>
+                  {space.requiresApproval ? (
+                    <Chip status="pendente" label="Requer aprovação" />
+                  ) : (
+                    <Chip status="aprovado" label="Automática" />
+                  )}
+                </div>
+                <div>
+                  <Chip status={space.active ? 'aprovado' : 'cancelado'} label={space.active ? 'Ativo' : 'Inativo'} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openEdit(space)}
+                    className="text-xs text-brand-accent hover:underline font-medium"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => toggleActive(space)}
+                    className={`text-xs hover:underline ${space.active ? 'text-brand-red' : 'text-brand-green'}`}
+                  >
+                    {space.active ? 'Desativar' : 'Ativar'}
+                  </button>
+                </div>
               </div>
-              <p className="text-sm text-brand-muted">{typeLabels[space.type] ?? space.type}</p>
-              <p className="text-sm text-brand-muted">{space.capacity ? `${space.capacity} pessoas` : '—'}</p>
-              <div>
-                {space.requiresApproval ? (
-                  <Chip status="pendente" label="Requer aprovação" />
-                ) : (
-                  <Chip status="aprovado" label="Automática" />
-                )}
-              </div>
-              <div>
-                <Chip status={space.active ? 'aprovado' : 'cancelado'} label={space.active ? 'Ativo' : 'Inativo'} />
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openEdit(space)}
-                  className="text-xs text-brand-accent hover:underline font-medium"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => toggleActive(space)}
-                  className={`text-xs hover:underline ${space.active ? 'text-brand-red' : 'text-brand-green'}`}
-                >
-                  {space.active ? 'Desativar' : 'Ativar'}
-                </button>
+
+              {/* Mobile card */}
+              <div className="md:hidden px-4 py-3 border-b border-brand-borderL last:border-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-brand-text">{space.name}</p>
+                    {space.description && (
+                      <p className="text-[11px] text-brand-dim truncate">{space.description}</p>
+                    )}
+                    <p className="text-[12px] text-brand-muted">{typeLabels[space.type] ?? space.type}</p>
+                  </div>
+                  <Chip status={space.active ? 'aprovado' : 'cancelado'} label={space.active ? 'Ativo' : 'Inativo'} />
+                </div>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  {space.capacity && <span className="text-[12px] text-brand-muted">{space.capacity} pessoas</span>}
+                  {space.requiresApproval ? (
+                    <Chip status="pendente" label="Requer aprovação" />
+                  ) : (
+                    <Chip status="aprovado" label="Automática" />
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => openEdit(space)}
+                    className="text-xs text-brand-accent hover:underline font-medium"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => toggleActive(space)}
+                    className={`text-xs hover:underline ${space.active ? 'text-brand-red' : 'text-brand-green'}`}
+                  >
+                    {space.active ? 'Desativar' : 'Ativar'}
+                  </button>
+                </div>
               </div>
             </div>
           ))
@@ -330,7 +369,7 @@ export function SpacesList({ spaces, userRole }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Tipo *</label>
               <select
@@ -451,7 +490,7 @@ export function SpacesList({ spaces, userRole }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Tipo *</label>
               <select

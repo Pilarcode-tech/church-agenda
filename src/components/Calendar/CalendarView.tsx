@@ -70,20 +70,20 @@ export function CalendarView({
   return (
     <div>
       {headerControls && (
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => goTo('prev')} className="text-brand-muted hover:text-brand-text px-2"><ChevronLeft size={18} /></button>
-            <h2 className="font-serif text-lg text-brand-text capitalize min-w-[180px] text-center">{title}</h2>
-            <button onClick={() => goTo('next')} className="text-brand-muted hover:text-brand-text px-2"><ChevronRight size={18} /></button>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <button onClick={() => goTo('prev')} className="text-brand-muted hover:text-brand-text px-1"><ChevronLeft size={18} /></button>
+            <h2 className="font-serif text-base md:text-lg text-brand-text capitalize min-w-0 text-center truncate">{title}</h2>
+            <button onClick={() => goTo('next')} className="text-brand-muted hover:text-brand-text px-1"><ChevronRight size={18} /></button>
             <button
               onClick={() => goTo('today')}
-              className="text-xs text-brand-accent border border-brand-accent rounded px-2 py-1 hover:bg-brand-accentL ml-2"
+              className="text-xs text-brand-accent border border-brand-accent rounded px-2 py-1 hover:bg-brand-accentL ml-1"
             >
               Hoje
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* View tabs */}
             <div className="flex bg-brand-bg rounded-lg p-0.5">
               {views.map((v) => (

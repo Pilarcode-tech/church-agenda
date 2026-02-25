@@ -32,7 +32,7 @@ export default async function RequestsPage() {
         title="Solicitações de Reunião"
         subtitle="Gerencie solicitações de reunião com o pastor"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <RequestsList
           requests={JSON.parse(JSON.stringify(allRequests.docs))}
           pendingCount={pendingCount.totalDocs}

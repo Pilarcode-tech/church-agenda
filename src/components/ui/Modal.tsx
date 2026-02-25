@@ -37,9 +37,9 @@ export function Modal({ open, onClose, title, children, footer, wide }: ModalPro
       }}
     >
       <div
-        className={`bg-brand-white rounded-xl shadow-xl border border-brand-border animate-slideUp ${
+        className={`bg-brand-white rounded-xl shadow-xl border border-brand-border animate-slideUp mx-4 md:mx-0 ${
           wide ? 'w-full max-w-2xl' : 'w-full max-w-md'
-        } max-h-[90vh] flex flex-col`}
+        } max-h-[85vh] md:max-h-[90vh] flex flex-col`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-brand-borderL">

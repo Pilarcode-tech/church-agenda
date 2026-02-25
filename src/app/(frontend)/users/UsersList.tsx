@@ -183,13 +183,13 @@ export function UsersList({ users, userRole }: Props) {
   return (
     <>
       {/* Tabs + new button */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+        <div className="flex items-center gap-1 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors whitespace-nowrap ${
                 filter === tab.key
                   ? 'bg-brand-text text-white font-medium'
                   : 'text-brand-muted hover:bg-brand-bg'
@@ -210,7 +210,7 @@ export function UsersList({ users, userRole }: Props) {
         </div>
         <button
           onClick={() => setShowNew(true)}
-          className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 flex items-center gap-1.5"
+          className="bg-brand-text text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-stone-800 flex items-center gap-1.5 self-start md:self-auto"
         >
           <Plus size={14} /> Novo usuário
         </button>
@@ -218,8 +218,9 @@ export function UsersList({ users, userRole }: Props) {
 
       {/* Table */}
       <div className="bg-brand-white border border-brand-border rounded-xl overflow-hidden">
+        {/* Desktop header */}
         <div
-          className="grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL"
+          className="hidden md:grid text-[11px] text-brand-dim font-medium uppercase tracking-wider px-5 py-3 border-b border-brand-borderL"
           style={{ gridTemplateColumns: '2fr 2fr 1fr 1.5fr 1fr 100px' }}
         >
           <span>Nome</span>
@@ -234,36 +235,70 @@ export function UsersList({ users, userRole }: Props) {
           <EmptyState icon={<Users size={36} strokeWidth={1.5} />} message="Nenhum usuário encontrado" />
         ) : (
           filtered.map((u) => (
-            <div
-              key={u.id}
-              className="grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
-              style={{ gridTemplateColumns: '2fr 2fr 1fr 1.5fr 1fr 100px' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <Avatar name={u.name ?? '?'} size="sm" />
-                <p className="text-sm text-brand-text truncate">{u.name}</p>
+            <div key={u.id}>
+              {/* Desktop row */}
+              <div
+                className="hidden md:grid items-center px-5 py-3 border-b border-brand-borderL last:border-0 hover:bg-brand-bg/50 transition-colors"
+                style={{ gridTemplateColumns: '2fr 2fr 1fr 1.5fr 1fr 100px' }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Avatar name={u.name ?? '?'} size="sm" />
+                  <p className="text-sm text-brand-text truncate">{u.name}</p>
+                </div>
+                <p className="text-sm text-brand-muted truncate">{u.email}</p>
+                <div>
+                  <Chip status={roleChipStatus[u.role] as any} label={roleLabels[u.role] ?? u.role} />
+                </div>
+                <p className="text-sm text-brand-muted truncate">{u.ministerio || '—'}</p>
+                <div>
+                  <Chip status={u.active ? 'aprovado' : 'cancelado'} label={u.active ? 'Ativo' : 'Inativo'} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openEdit(u)}
+                    className="text-xs text-brand-accent hover:underline font-medium"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => toggleActive(u)}
+                    className={`text-xs hover:underline ${u.active ? 'text-brand-red' : 'text-brand-green'}`}
+                  >
+                    {u.active ? 'Desativar' : 'Ativar'}
+                  </button>
+                </div>
               </div>
-              <p className="text-sm text-brand-muted truncate">{u.email}</p>
-              <div>
-                <Chip status={roleChipStatus[u.role] as any} label={roleLabels[u.role] ?? u.role} />
-              </div>
-              <p className="text-sm text-brand-muted truncate">{u.ministerio || '—'}</p>
-              <div>
-                <Chip status={u.active ? 'aprovado' : 'cancelado'} label={u.active ? 'Ativo' : 'Inativo'} />
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openEdit(u)}
-                  className="text-xs text-brand-accent hover:underline font-medium"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => toggleActive(u)}
-                  className={`text-xs hover:underline ${u.active ? 'text-brand-red' : 'text-brand-green'}`}
-                >
-                  {u.active ? 'Desativar' : 'Ativar'}
-                </button>
+
+              {/* Mobile card */}
+              <div className="md:hidden px-4 py-3 border-b border-brand-borderL last:border-0">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar name={u.name ?? '?'} size="sm" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-brand-text truncate">{u.name}</p>
+                      <p className="text-[11px] text-brand-dim truncate">{u.email}</p>
+                    </div>
+                  </div>
+                  <Chip status={u.active ? 'aprovado' : 'cancelado'} label={u.active ? 'Ativo' : 'Inativo'} />
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Chip status={roleChipStatus[u.role] as any} label={roleLabels[u.role] ?? u.role} />
+                  {u.ministerio && <span className="text-[12px] text-brand-muted">{u.ministerio}</span>}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => openEdit(u)}
+                    className="text-xs text-brand-accent hover:underline font-medium"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => toggleActive(u)}
+                    className={`text-xs hover:underline ${u.active ? 'text-brand-red' : 'text-brand-green'}`}
+                  >
+                    {u.active ? 'Desativar' : 'Ativar'}
+                  </button>
+                </div>
               </div>
             </div>
           ))
@@ -311,7 +346,7 @@ export function UsersList({ users, userRole }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">E-mail *</label>
               <input
@@ -334,7 +369,7 @@ export function UsersList({ users, userRole }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Perfil de acesso *</label>
               <select
@@ -404,7 +439,7 @@ export function UsersList({ users, userRole }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">E-mail *</label>
               <input
@@ -426,7 +461,7 @@ export function UsersList({ users, userRole }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Perfil de acesso *</label>
               <select

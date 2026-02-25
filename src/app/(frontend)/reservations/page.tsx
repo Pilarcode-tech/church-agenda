@@ -35,7 +35,7 @@ export default async function ReservationsPage() {
         title="Reservas"
         subtitle="Gerencie reservas de espaços da igreja"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <ReservationsList
           reservations={JSON.parse(JSON.stringify(allReservations.docs))}
           pendingCount={pendingCount.totalDocs}

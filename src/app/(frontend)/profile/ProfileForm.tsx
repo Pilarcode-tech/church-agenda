@@ -132,7 +132,7 @@ export function ProfileForm({ user }: Props) {
             <p className="text-[11px] text-brand-dim mt-1">O e-mail não pode ser alterado.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Ministério / Área</label>
               <input
@@ -170,7 +170,7 @@ export function ProfileForm({ user }: Props) {
         <h3 className="font-serif text-base text-brand-text mb-4">Alterar senha</h3>
 
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text mb-1">Nova senha *</label>
               <input

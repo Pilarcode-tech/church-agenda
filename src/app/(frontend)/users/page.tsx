@@ -28,7 +28,7 @@ export default async function UsersPage() {
         title="Usuários"
         subtitle="Gerencie os usuários do sistema"
       />
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <UsersList
           users={JSON.parse(JSON.stringify(allUsers.docs))}
           userRole={role}

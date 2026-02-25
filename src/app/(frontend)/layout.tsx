@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { UserMenu } from '@/components/UserMenu'
+import { MobileLayout } from '@/components/MobileLayout'
 import { ToastProvider } from '@/components/ui/Toast'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
@@ -72,21 +73,23 @@ export default async function FrontendLayout({
     email: user.email || '',
   }
 
+  const userMenuEl = <UserMenu user={userData} />
+
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-brand-bg">
-        <Sidebar
-          user={userData}
-          pendingRequestsCount={unseenRequestsCount}
-          pendingReservationsCount={pendingReservations.totalDocs}
-        />
-        <div className="fixed top-3 right-6 z-[60]">
-          <UserMenu user={userData} />
-        </div>
-        <main className="ml-[232px] min-h-screen">
-          {children}
-        </main>
-      </div>
+      <MobileLayout
+        sidebar={
+          <Sidebar
+            user={userData}
+            pendingRequestsCount={unseenRequestsCount}
+            pendingReservationsCount={pendingReservations.totalDocs}
+            userMenu={userMenuEl}
+          />
+        }
+        userMenu={userMenuEl}
+      >
+        {children}
+      </MobileLayout>
     </ToastProvider>
   )
 }
