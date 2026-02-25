@@ -18,11 +18,13 @@ export default async function RequestsPage() {
       depth: 1,
       limit: 100,
       user,
+      overrideAccess: false,
     }),
     payload.count({
       collection: 'meeting-requests',
       where: { status: { equals: 'pendente' } },
       user,
+      overrideAccess: false,
     }),
   ])
 

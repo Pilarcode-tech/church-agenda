@@ -30,6 +30,7 @@ export default async function DashboardPage() {
       collection: 'meeting-requests',
       where: { status: { equals: 'pendente' } },
       user,
+      overrideAccess: false,
     }),
     payload.count({
       collection: 'pastor-schedule',
@@ -50,6 +51,7 @@ export default async function DashboardPage() {
         ],
       },
       user,
+      overrideAccess: false,
     }),
     payload.count({
       collection: 'pastor-schedule',
@@ -72,6 +74,7 @@ export default async function DashboardPage() {
       sort: '-createdAt',
       depth: 1,
       user,
+      overrideAccess: false,
     }),
     payload.find({
       collection: 'reservations',
@@ -85,6 +88,7 @@ export default async function DashboardPage() {
       sort: 'startDateTime',
       depth: 1,
       user,
+      overrideAccess: false,
     }),
     payload.find({
       collection: 'pastor-schedule',

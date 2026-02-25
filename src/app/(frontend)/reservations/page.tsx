@@ -18,11 +18,13 @@ export default async function ReservationsPage() {
       depth: 1,
       limit: 100,
       user,
+      overrideAccess: false,
     }),
     payload.count({
       collection: 'reservations',
       where: { status: { equals: 'pendente' } },
       user,
+      overrideAccess: false,
     }),
     payload.find({
       collection: 'spaces',
