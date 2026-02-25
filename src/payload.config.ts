@@ -47,11 +47,14 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  // CORS para permitir o domínio da Vercel
   cors: [
-    process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
-  ].filter(Boolean),
+    'https://agenda.verbodavidaaruja.com.br',
+    process.env.NEXT_PUBLIC_SERVER_URL,
+    'http://localhost:3000',
+  ].filter(Boolean) as string[],
   csrf: [
-    process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
-  ].filter(Boolean),
+    'https://agenda.verbodavidaaruja.com.br',
+    process.env.NEXT_PUBLIC_SERVER_URL,
+    'http://localhost:3000',
+  ].filter(Boolean) as string[],
 })
