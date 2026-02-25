@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { getCurrentUser } from '@/lib/auth'
 import { Topbar } from '@/components/Topbar'
 import { Chip } from '@/components/ui/Chip'
 import { Avatar } from '@/components/ui/Avatar'
@@ -13,6 +14,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   const payload = await getPayload({ config })
+  const user = await getCurrentUser()
   const now = new Date()
   const todayStart = startOfDay(now).toISOString()
   const todayEnd = endOfDay(now).toISOString()
@@ -27,6 +29,7 @@ export default async function DashboardPage() {
     payload.count({
       collection: 'meeting-requests',
       where: { status: { equals: 'pendente' } },
+      user,
     }),
     payload.count({
       collection: 'pastor-schedule',
@@ -46,6 +49,7 @@ export default async function DashboardPage() {
           { startDateTime: { less_than_equal: next7days } },
         ],
       },
+      user,
     }),
     payload.count({
       collection: 'pastor-schedule',
@@ -67,6 +71,7 @@ export default async function DashboardPage() {
       limit: 3,
       sort: '-createdAt',
       depth: 1,
+      user,
     }),
     payload.find({
       collection: 'reservations',
@@ -79,6 +84,7 @@ export default async function DashboardPage() {
       limit: 3,
       sort: 'startDateTime',
       depth: 1,
+      user,
     }),
     payload.find({
       collection: 'pastor-schedule',
