@@ -8,7 +8,6 @@ type NavItem = {
   label: string
   href: string
   icon: React.ReactNode
-  badge?: number
 }
 
 type NavGroup = {
@@ -23,12 +22,10 @@ type SidebarProps = {
     role: string
     email: string
   } | null
-  pendingRequestsCount?: number
-  pendingReservationsCount?: number
   userMenu?: React.ReactNode
 }
 
-export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCount = 0, userMenu }: SidebarProps) {
+export function Sidebar({ user, userMenu }: SidebarProps) {
   const pathname = usePathname()
 
   const navGroups: NavGroup[] = [
@@ -43,14 +40,14 @@ export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCou
       title: 'Agenda',
       items: [
         { label: 'Agenda do Pastor', href: '/pastor', icon: <Clock size={16} /> },
-        { label: 'Solicitações', href: '/requests', icon: <Mail size={16} />, badge: pendingRequestsCount },
+        { label: 'Solicitações', href: '/requests', icon: <Mail size={16} /> },
       ],
     },
     {
       title: 'Espaços',
       items: [
         { label: 'Espaços e Salas', href: '/spaces', icon: <Building2 size={16} /> },
-        { label: 'Reservas', href: '/reservations', icon: <CalendarCheck size={16} />, badge: pendingReservationsCount },
+        { label: 'Reservas', href: '/reservations', icon: <CalendarCheck size={16} /> },
       ],
     },
     {
@@ -100,11 +97,6 @@ export function Sidebar({ user, pendingRequestsCount = 0, pendingReservationsCou
                       >
                         <span className="w-5 flex items-center justify-center">{item.icon}</span>
                         <span className="flex-1">{item.label}</span>
-                        {item.badge && item.badge > 0 ? (
-                          <span className="bg-brand-amber text-white text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                            {item.badge}
-                          </span>
-                        ) : null}
                       </Link>
                     </li>
                   )

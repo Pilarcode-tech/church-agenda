@@ -1,6 +1,4 @@
 import { getCurrentUser } from '@/lib/auth'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { UserMenu } from '@/components/UserMenu'
 import { MobileLayout } from '@/components/MobileLayout'
@@ -18,18 +16,6 @@ export default async function FrontendLayout({
     redirect('/login')
   }
 
-  const payload = await getPayload({ config })
-
-  const pendingRequests = await payload.count({
-    collection: 'meeting-requests',
-    where: { status: { equals: 'pendente' } },
-  })
-
-  const pendingReservations = await payload.count({
-    collection: 'reservations',
-    where: { status: { equals: 'pendente' } },
-  })
-
   const userData = {
     name: user.name as string,
     role: user.role as string,
@@ -44,8 +30,6 @@ export default async function FrontendLayout({
         sidebar={
           <Sidebar
             user={userData}
-            pendingRequestsCount={pendingRequests.totalDocs}
-            pendingReservationsCount={pendingReservations.totalDocs}
             userMenu={userMenuEl}
           />
         }
