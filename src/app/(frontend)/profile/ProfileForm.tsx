@@ -44,7 +44,7 @@ export function ProfileForm({ user }: Props) {
     if (!form.name.trim()) return
     setSavingProfile(true)
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
+      const res = await fetch(`/api/manage/users/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -78,7 +78,7 @@ export function ProfileForm({ user }: Props) {
     }
     setSavingPassword(true)
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
+      const res = await fetch(`/api/manage/users/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

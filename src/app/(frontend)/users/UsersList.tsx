@@ -95,7 +95,7 @@ export function UsersList({ users, userRole }: Props) {
     if (!createFormValid) return
     setSaving(true)
     try {
-      const res = await fetch('/api/users', {
+      const res = await fetch('/api/manage/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -141,7 +141,7 @@ export function UsersList({ users, userRole }: Props) {
         body.password = editForm.password
       }
 
-      const res = await fetch(`/api/users/${editing.id}`, {
+      const res = await fetch(`/api/manage/users/${editing.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -165,7 +165,7 @@ export function UsersList({ users, userRole }: Props) {
 
   async function toggleActive(user: User) {
     try {
-      const res = await fetch(`/api/users/${user.id}`, {
+      const res = await fetch(`/api/manage/users/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
