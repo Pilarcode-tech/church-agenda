@@ -50,14 +50,37 @@ export async function GET(req: NextRequest) {
   })
 
   const formatted = events.docs.map((event) => {
+    const requestedById =
+      typeof event.requestedBy === 'object' && event.requestedBy !== null
+        ? (event.requestedBy as any).id
+        : event.requestedBy
+    const isOwnMeeting = !isPrivileged && requestedById && requestedById === user.id
+
     const canSeeDetails = event.isPublic || isPrivileged
+
+    if (isOwnMeeting) {
+      return {
+        id: event.id,
+        title: 'Sua reunião com o Pastor',
+        type: 'reuniao',
+        start: event.startDateTime,
+        end: event.endDateTime,
+        isPublic: event.isPublic,
+        isOwnMeeting: true,
+        notes: undefined,
+        color: '#2563EB',
+        textColor: '#ffffff',
+      }
+    }
+
     return {
       id: event.id,
-      title: canSeeDetails ? event.title : 'Ocupado',
+      title: canSeeDetails ? event.title : 'Em reunião',
       type: canSeeDetails ? event.type : 'bloqueio',
       start: event.startDateTime,
       end: event.endDateTime,
       isPublic: event.isPublic,
+      isOwnMeeting: false,
       notes: isPrivileged ? event.notes : undefined,
       color: canSeeDetails ? getColorByType(event.type as string) : '#9CA3AF',
       textColor: '#ffffff',

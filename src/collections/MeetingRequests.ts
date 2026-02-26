@@ -102,6 +102,10 @@ const MeetingRequests: CollectionConfig = {
         if (operation === 'update' && doc.status === 'aprovado' && doc.confirmedDateTime) {
           try {
             const endDateTime = new Date(new Date(doc.confirmedDateTime).getTime() + (doc.estimatedDuration || 30) * 60000).toISOString()
+            const requesterId =
+              typeof doc.requestedBy === 'object'
+                ? (doc.requestedBy as any).id
+                : doc.requestedBy
             await req.payload.create({
               collection: 'pastor-schedule',
               data: {
@@ -112,6 +116,7 @@ const MeetingRequests: CollectionConfig = {
                 isPublic: false,
                 notes: `Solicitado por: ${typeof doc.requestedBy === 'object' ? (doc.requestedBy as any).name : doc.requestedBy}`,
                 createdBy: req.user?.id,
+                requestedBy: requesterId,
               },
               overrideAccess: true,
             })

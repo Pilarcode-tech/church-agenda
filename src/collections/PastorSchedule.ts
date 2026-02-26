@@ -61,6 +61,16 @@ const PastorSchedule: CollectionConfig = {
       },
     },
     {
+      name: 'requestedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'Solicitado por',
+      admin: {
+        readOnly: true,
+        description: 'Líder que solicitou esta reunião (preenchido automaticamente).',
+      },
+    },
+    {
       name: 'createdBy',
       type: 'relationship',
       relationTo: 'users',

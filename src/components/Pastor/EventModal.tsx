@@ -126,8 +126,10 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
 
   // Read-only view for líderes
   if (!canEdit) {
+    const isOwnMeeting = event?.isOwnMeeting
+
     return (
-      <Modal open={open} onClose={onClose} title="Compromisso">
+      <Modal open={open} onClose={onClose} title={isOwnMeeting ? 'Sua reunião' : 'Compromisso'}>
         {event ? (
           <div className="space-y-4">
             {/* Color bar */}
@@ -148,11 +150,17 @@ export default function EventModal({ open, onClose, onSave, onDelete, event, ini
               </div>
               <div className="flex items-center gap-2 text-brand-muted">
                 <span>🏷</span>
-                <span className="capitalize">{event.type}</span>
+                <span className="capitalize">{isOwnMeeting ? 'Reunião' : event.type}</span>
               </div>
             </div>
 
-            {!event.isPublic && (
+            {isOwnMeeting && (
+              <p className="text-xs text-brand-muted bg-blue-50 rounded-lg px-3 py-2">
+                Reunião agendada com o Pastor. Compareça no horário indicado.
+              </p>
+            )}
+
+            {!event.isPublic && !isOwnMeeting && (
               <p className="text-xs text-brand-dim bg-brand-bg rounded-lg px-3 py-2">
                 Detalhes não disponíveis
               </p>
